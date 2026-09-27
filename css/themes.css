@@ -1,0 +1,59 @@
+/* ================================================================
+   SUNUAGRI IA — THÈMES (Clair & Sombre)
+   ================================================================ */
+
+:root {
+    --primary: #059669;
+    --primary-dark: #047857;
+    --primary-darker: #065f46;
+    --primary-light: #d1fae5;
+    --primary-xlight: #f0fdf4;
+    --danger: #dc2626;
+
+    --bg-page: #0b1329;
+    --bg-frame: #ffffff;
+    --bg-card: #ffffff;
+    --bg-card-alt: #f8fafc;
+    --bg-input: #f1f5f9;
+    --bg-header: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
+    --bg-nav: rgba(255, 255, 255, 0.97);
+
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+
+    --border: #e2e8f0;
+    --border-card: #f1f5f9;
+
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.07);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+    --bg-frame: #0f172a;
+    --bg-card: #1e293b;
+    --bg-card-alt: #1e293b;
+    --bg-input: #0f172a;
+    --bg-nav: rgba(15, 23, 42, 0.97);
+    --bg-header: linear-gradient(135deg, #022c22 0%, #064e3b 50%, #065f46 100%);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --border: #334155;
+    --border-card: #1e293b;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Dark-specific overrides */
+[data-theme="dark"] .tip-box { background: var(--bg-card-alt); border-color: var(--border); }
+[data-theme="dark"] .tip-box p { color: var(--text-secondary); }
+[data-theme="dark"] .compare-item.best { background: rgba(5, 150, 105, 0.1); }
+[data-theme="dark"] .trend-badge.up { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+[data-theme="dark"] .trend-badge.stable { background: var(--bg-input); color: var(--text-secondary); }
+[data-theme="dark"] .verified-badge { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+[data-theme="dark"] .bubble-bot { background: rgba(5, 150, 105, 0.1); border-color: rgba(5, 150, 105, 0.2); }
+[data-theme="dark"] .bubble-user { background: #1e293b; border: 1px solid #334155; }
+[data-theme="dark"] .online-dot { background: rgba(5, 150, 105, 0.15); }
+[data-theme="dark"] .formula-box { color: #6ee7b7; background: #0f172a; }
+[data-theme="dark"] .toast { background: rgba(255, 255, 255, 0.95); color: #0f172a; }

@@ -1,1538 +1,524 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SunuAgri IA - Vendez au Meilleur Prix et au Bon Moment</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
+    <title>SunuAgri IA — Vendez au Meilleur Prix et au Bon Moment</title>
+    <meta name="description" content="SunuAgri IA aide les producteurs agricoles sénégalais à optimiser leurs ventes grâce à l'intelligence artificielle.">
+    <meta name="theme-color" content="#065f46">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        :root {
-            --primary: #059669;
-            --primary-dark: #065f46;
-            --primary-light: #d1fae5;
-            --accent: #d97706;
-            --accent-gold: #f59e0b;
-            --dark: #0f172a;
-            --light-bg: #f8fafc;
-        }
-
-        body {
-            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0b1329;
-            color: #1e293b;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Simulateur Cadre Smartphone pour Pitch Hackathon */
-        .mobile-device-frame {
-            width: 100%;
-            max-width: 440px;
-            height: 900px;
-            max-height: 96vh;
-            background: #ffffff;
-            border-radius: 46px;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 12px #1e293b, 0 0 0 14px #334155;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s ease;
-        }
-
-        /* Mode plein écran pour grand écran / projecteur */
-        .mobile-device-frame.fullscreen-mode {
-            max-width: 900px;
-            height: 96vh;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Barre de statut du téléphone */
-        .status-bar {
-            height: 44px;
-            background: #ffffff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 24px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #0f172a;
-            z-index: 50;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-        }
-
-        .notch {
-            width: 120px;
-            height: 22px;
-            background: #1e293b;
-            border-bottom-left-radius: 14px;
-            border-bottom-right-radius: 14px;
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        /* Zone de contenu déroulante */
-        .app-screen {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-            padding-bottom: 90px;
-            background: #f8fafc;
-        }
-
-        .app-screen::-webkit-scrollbar {
-            display: none;
-        }
-        .app-screen {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* Barre de navigation inférieure mobile */
-        .bottom-nav {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 72px;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 0 10px;
-            z-index: 40;
-        }
-
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            border: none;
-            color: #64748b;
-            font-size: 11px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            padding: 6px 12px;
-            border-radius: 12px;
-        }
-
-        .nav-item.active {
-            color: var(--primary);
-            background: var(--primary-light);
-            transform: translateY(-2px);
-        }
-
-        .nav-item svg {
-            width: 22px;
-            height: 22px;
-            margin-bottom: 3px;
-        }
-
-        /* Animation de vague vocale (Equalizer) */
-        .voice-wave {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            height: 20px;
-        }
-
-        .voice-bar {
-            width: 3px;
-            background-color: #10b981;
-            border-radius: 3px;
-            animation: bounce-wave 1s ease-in-out infinite;
-        }
-
-        .voice-bar:nth-child(1) { height: 6px; animation-delay: 0.1s; }
-        .voice-bar:nth-child(2) { height: 16px; animation-delay: 0.25s; }
-        .voice-bar:nth-child(3) { height: 22px; animation-delay: 0.15s; }
-        .voice-bar:nth-child(4) { height: 12px; animation-delay: 0.3s; }
-        .voice-bar:nth-child(5) { height: 8px; animation-delay: 0.2s; }
-
-        @keyframes bounce-wave {
-            0%, 100% { transform: scaleY(0.4); }
-            50% { transform: scaleY(1.3); }
-        }
-
-        /* Cartes et dégradés élégants */
-        .gradient-hero {
-            background: linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%);
-        }
-
-        .card-shine {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-shine::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(
-                60deg,
-                rgba(255, 255, 255, 0) 20%,
-                rgba(255, 255, 255, 0.12) 50%,
-                rgba(255, 255, 255, 0) 80%
-            );
-            transform: rotate(30deg);
-            pointer-events: none;
-        }
-
-        /* Badge IA animé */
-        .badge-ai {
-            background: linear-gradient(135deg, #10b981, #047857);
-            color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-            animation: pulse-glow 2.5s infinite;
-        }
-
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-        .tab-content {
-            display: none;
-            opacity: 0;
-            transform: translateY(6px);
-            transition: opacity 0.25s ease, transform 0.25s ease;
-        }
-
-        .tab-content.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        @media (max-width: 500px) {
-            body {
-                background: #ffffff;
-            }
-            .mobile-device-frame {
-                max-width: 100%;
-                height: 100vh;
-                max-height: 100vh;
-                border-radius: 0;
-                box-shadow: none;
-            }
-            .notch {
-                display: none;
-            }
-        }
-    </style>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <link rel="stylesheet" href="css/themes.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
 </head>
-<body class="bg-slate-950 flex items-center justify-center min-h-screen p-0 sm:p-4">
+<body>
 
-    <!-- Boutons flottants de présentation et de Téléchargement direct -->
-    <div class="fixed top-4 right-4 z-50 flex gap-2">
-        <button id="btn-download-file" title="Télécharger le fichier complet"
-            class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-2 rounded-full border border-emerald-400 flex items-center gap-1.5 shadow-xl backdrop-blur transition active:scale-95">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            <span>Télécharger l'App (HTML)</span>
-        </button>
-        <button id="toggle-frame-btn" title="Basculer affichage plein écran / smartphone" 
-            class="bg-slate-800/90 hover:bg-slate-700 text-white text-xs px-3 py-2 rounded-full border border-slate-700 flex items-center gap-1.5 shadow-lg backdrop-blur">
-            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
-            <span class="hidden sm:inline">Plein Écran</span>
-        </button>
-    </div>
 
-    <!-- Cadre Mobile Mockup pour Smartphone -->
-    <div id="device-frame" class="mobile-device-frame">
-        
-        <!-- Encoche Smartphone & Barre de Statut -->
-        <div class="notch hidden sm:block"></div>
-        <div class="status-bar">
-            <span id="current-time">09:41</span>
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">4G+</span>
-                <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
-                <i data-lucide="battery" class="w-4 h-4"></i>
-            </div>
-        </div>
+    <div id="device-frame" class="device-frame">
+        <!-- Toast notification -->
+        <div id="toast" class="toast" style="display:none;" role="status"></div>
 
-        <!-- En-tête de l'application -->
-        <header class="gradient-hero text-white px-5 pt-3 pb-4 shadow-md">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center text-xl shadow-inner border border-white/20">
-                        🌱
-                    </div>
+        <!-- Header -->
+        <header class="app-header">
+            <div class="app-header__inner">
+                <div class="app-header__brand">
+                    <div class="app-header__logo" aria-hidden="true">🌱</div>
                     <div>
-                        <div class="flex items-center gap-1.5">
-                            <h1 class="font-extrabold text-lg leading-tight tracking-tight">SunuAgri IA</h1>
-                            <span class="bg-amber-400 text-slate-900 text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">Sénégal</span>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <h1 class="app-header__title">SunuAgri IA</h1>
                         </div>
-                        <p class="text-xs text-emerald-100 font-medium">L'IA qui booste le revenu des agriculteurs</p>
+                        <p class="app-header__sub">L'IA au service des producteurs</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="flex h-2.5 w-2.5 relative">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-300"></span>
-                    </span>
-                    <span class="text-[11px] font-semibold text-emerald-100">En direct</span>
+                <div class="header-controls">
+                    <button id="account-toggle" class="header-account-btn" type="button" aria-label="Ouvrir mon compte" aria-expanded="false">
+                        <i data-lucide="user-round" style="width:16px;height:16px;"></i><span>Mon compte</span>
+                    </button>
+                    <button class="theme-btn" id="btn-theme" aria-label="Changer de thème">
+                        <i data-lucide="moon" id="theme-icon" style="width:16px;height:16px;"></i>
+                    </button>
+                    <button id="btn-install" class="install-btn" type="button" aria-label="Installer SunuAgri IA">
+                        <i data-lucide="download" style="width:15px;height:15px;"></i><span>Installer</span>
+                    </button>
+                    <div class="live-badge">
+                        <span class="live-dot" aria-hidden="true"></span>
+                        <span>En direct</span>
+                    </div>
                 </div>
             </div>
         </header>
 
-        <!-- Contenu Principal Déroulant -->
-        <main class="app-screen">
+        <!-- Scrollable Content -->
+        <main class="app-screen" id="app-screen">
 
-            <!-- ================= ONGLET 1 : IA PRÉDICTIVE (OÙ & QUAND VENDRE) ================= -->
-            <section id="tab-predict" class="tab-content active p-4 space-y-4">
-                
-                <!-- Carte formulaire interactif -->
-                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 card-shine">
-                    <div class="flex items-start gap-3">
-                        <div class="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
-                            <i data-lucide="brain-circuit" class="w-6 h-6"></i>
-                        </div>
-                        <div>
-                            <h2 class="font-bold text-slate-800 text-sm">Moteur d'Optimisation IA</h2>
-                            <p class="text-xs text-slate-500 mt-0.5">
-                                Calculez le marché le plus rentable, la date idéale de vente et votre bénéfice supplémentaire en FCFA.
-                            </p>
-                        </div>
+            <!-- TAB 0: ACCUEIL -->
+            <section id="tab-home" class="tab-pane active" aria-label="Accueil">
+                <div class="landing-hero">
+                    <span class="hero-emoji" aria-hidden="true">🌾</span>
+                    <h2 class="hero-title">Tableau de bord</h2>
+                    <p class="hero-sub">Vos outils agricoles et les repères du jour</p>
+                </div>
+                <div class="stats-row">
+                    <div class="stat"><div class="stat__num">8+</div><div class="stat__lbl">Marchés</div></div>
+                    <div class="stat"><div class="stat__num">7</div><div class="stat__lbl">Régions</div></div>
+                    <div class="stat"><div class="stat__num">3</div><div class="stat__lbl">Langues</div></div>
+                </div>
+                <div class="feature-grid">
+                    <div class="feat-card" role="button" tabindex="0" data-nav="tab-predict">
+                        <div class="feat-icon">🤖</div>
+                        <div class="feat-title">IA Vente</div>
+                        <div class="feat-desc">Marché optimal et moment idéal</div>
                     </div>
-
-                    <div class="mt-4 space-y-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">Votre Récolte / Produit</label>
-                            <select id="input-product" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium">
-                            </select>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">Quantité</label>
-                                <div class="relative">
-                                    <input type="number" id="input-quantity" value="50" min="1" max="1000"
-                                        class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl p-2.5 pr-12 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-bold">
-                                    <span id="unit-label" class="absolute right-2.5 top-2.5 text-[10px] font-semibold text-slate-400">sacs</span>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1">Votre Région Actuelle</label>
-                                <select id="input-region" class="w-full bg-slate-50 border border-slate-200 text-slate-800 text-xs rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-medium">
-                                </select>
-                            </div>
-                        </div>
-
-                        <button id="btn-run-prediction" 
-                            class="w-full mt-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/30 transition">
-                            <i data-lucide="sparkles" class="w-4 h-4"></i>
-                            <span>Lancer l'Analyse IA (Où & Quand Vendre)</span>
-                        </button>
+                    <div class="feat-card" role="button" tabindex="0" data-nav="tab-markets">
+                        <div class="feat-icon">📊</div>
+                        <div class="feat-title">Observatoire</div>
+                        <div class="feat-desc">Cours des prix par marché</div>
+                    </div>
+                    <div class="feat-card" role="button" tabindex="0" data-nav="tab-marketplace">
+                        <div class="feat-icon">🛒</div>
+                        <div class="feat-title">SunuMarché</div>
+                        <div class="feat-desc">Vendre sans intermédiaire</div>
+                    </div>
+                    <div class="feat-card" role="button" tabindex="0" data-nav="tab-advisor">
+                        <div class="feat-icon">💬</div>
+                        <div class="feat-title">Conseiller IA</div>
+                        <div class="feat-desc">Stockage · Prix · Négociation</div>
                     </div>
                 </div>
+            </section>
 
-                <!-- CARTE DE RÉSULTAT IA -->
-                <div id="ai-results-container" class="space-y-4">
-                    
-                    <div class="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-2xl p-4 shadow-lg relative overflow-hidden">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="badge-ai text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full flex items-center gap-1">
-                                <i data-lucide="zap" class="w-3 h-3"></i> Recommandation IA
-                            </span>
-                            <span class="text-xs text-emerald-200" id="res-timestamp">Actualisé</span>
-                        </div>
-
-                        <h3 id="res-headline" class="text-base font-extrabold text-white mt-1 leading-snug">
-                            Vendre au Marché Castors (Dakar) d'ici 14 jours
-                        </h3>
-
-                        <!-- Sélecteur de Langue Vocale (Français / Wolof / Anglais) -->
-                        <div class="mt-3 flex items-center justify-between bg-black/20 p-1.5 rounded-xl border border-white/10">
-                            <span class="text-[10px] text-emerald-200 font-bold ml-1 flex items-center gap-1">
-                                <i data-lucide="languages" class="w-3 h-3"></i> Langue :
-                            </span>
-                            <div class="flex gap-1" id="voice-lang-selector">
-                                <button type="button" class="lang-btn active bg-emerald-500 text-slate-950 font-bold text-[10px] px-2 py-0.5 rounded-lg transition" data-lang="fr">
-                                    🇫🇷 FR
-                                </button>
-                                <button type="button" class="lang-btn bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] px-2 py-0.5 rounded-lg transition" data-lang="wo">
-                                    🇸🇳 Wolof
-                                </button>
-                                <button type="button" class="lang-btn bg-white/10 hover:bg-white/20 text-white font-bold text-[10px] px-2 py-0.5 rounded-lg transition" data-lang="en">
-                                    🇬🇧 EN
-                                </button>
+            <!-- TAB 1: IA VENTE -->
+            <section id="tab-predict" class="tab-pane" aria-label="IA Vente">
+                <div class="section-pad">
+                    <div class="card">
+                        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;">
+                            <div style="padding:8px;background:var(--primary-xlight);border-radius:12px;color:var(--primary);flex-shrink:0;">
+                                <i data-lucide="brain-circuit" style="width:20px;height:20px;display:block;"></i>
+                            </div>
+                            <div>
+                                <div class="section-title">Moteur d'Optimisation IA</div>
+                                <div class="section-sub">Marché optimal · Transport · Revenu net estimé</div>
                             </div>
                         </div>
-
-                        <!-- Audio Vocal avec Traduction multilingue -->
-                        <div class="mt-2.5 bg-white/10 backdrop-blur rounded-xl p-2.5 border border-white/15 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <button id="btn-speak-advice" class="w-10 h-10 rounded-full bg-amber-400 hover:bg-amber-300 text-slate-950 flex items-center justify-center shadow transition active:scale-95 shrink-0">
-                                    <i data-lucide="volume-2" class="w-5 h-5"></i>
-                                </button>
+                        <div style="display:flex;flex-direction:column;gap:10px;">
+                            <div>
+                                <label class="form-label" for="input-product">Votre Récolte</label>
+                                <select class="form-select" id="input-product"></select>
+                            </div>
+                            <div class="grid-2">
                                 <div>
-                                    <div class="text-[11px] font-bold text-white flex items-center gap-1.5">
-                                        <span id="speech-action-label">Écouter en Français</span>
-                                        <div id="audio-wave" class="voice-wave hidden">
-                                            <div class="voice-bar"></div>
-                                            <div class="voice-bar"></div>
-                                            <div class="voice-bar"></div>
-                                            <div class="voice-bar"></div>
-                                            <div class="voice-bar"></div>
-                                        </div>
+                                    <label class="form-label" for="input-quantity">Quantité</label>
+                                    <div style="position:relative;">
+                                        <input type="number" class="form-input" id="input-quantity" value="50" min="1" max="2000" style="padding-right:44px;">
+                                        <span id="unit-label" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:700;color:var(--text-muted);">Sacs</span>
                                     </div>
-                                    <p id="speech-preview-text" class="text-[10px] text-emerald-200 line-clamp-1 italic">
-                                        "Salam Alaykoum ! Mon conseil d'expert..."
-                                    </p>
                                 </div>
-                            </div>
-                            <span id="current-lang-badge" class="text-[10px] text-amber-300 font-bold bg-amber-400/20 px-2 py-0.5 rounded-full">FR</span>
-                        </div>
-
-                        <!-- Bénéfice Supplémentaire Prédit -->
-                        <div class="mt-4 pt-3 border-t border-white/15 grid grid-cols-2 gap-3">
-                            <div>
-                                <span class="text-[10px] text-emerald-200 block uppercase tracking-wider font-semibold">Surplus Estimé par l'IA</span>
-                                <span id="res-extra-profit" class="text-lg font-black text-amber-300 leading-tight block">+269 250 FCFA</span>
-                                <span id="res-profit-percent" class="text-[10px] text-emerald-300 font-medium">+38% de marge nette</span>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-[10px] text-emerald-200 block uppercase tracking-wider font-semibold">Date Optimale</span>
-                                <span id="res-best-date" class="text-xs font-bold text-white leading-tight block mt-1">Dimanche 4 Octobre</span>
-                                <span id="res-wait-days" class="text-[10px] text-emerald-300">Dans 14 jours</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Détail Rentabilité -->
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
-                        <h4 class="font-bold text-slate-800 text-xs uppercase tracking-wider flex items-center gap-1.5">
-                            <i data-lucide="calculator" class="w-4 h-4 text-emerald-600"></i>
-                            <span>Détail de la Rentabilité Nette</span>
-                        </h4>
-
-                        <div class="space-y-2 text-xs">
-                            <div class="flex justify-between py-1 border-b border-slate-100">
-                                <span class="text-slate-500">Prix cible estimé à terme :</span>
-                                <span id="res-unit-price" class="font-bold text-slate-800">21 700 FCFA / sac</span>
-                            </div>
-                            <div class="flex justify-between py-1 border-b border-slate-100">
-                                <span class="text-slate-500">Revenu net total prévu :</span>
-                                <span id="res-net-revenue" class="font-bold text-emerald-600">975 000 FCFA</span>
-                            </div>
-                            <div class="flex justify-between py-1 border-b border-slate-100">
-                                <span class="text-slate-500">Frais de transport déduits :</span>
-                                <span id="res-transport-cost" class="font-medium text-rose-600">-42 000 FCFA</span>
-                            </div>
-                            <div class="flex justify-between py-1">
-                                <span class="text-slate-500">Prix si vente locale hâtive :</span>
-                                <span id="res-baseline-price" class="font-medium text-slate-400">705 750 FCFA</span>
-                            </div>
-                        </div>
-
-                        <!-- Conseil Stockage -->
-                        <div class="bg-amber-50 rounded-xl p-3 border border-amber-100 text-xs">
-                            <div class="flex items-start gap-2">
-                                <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
                                 <div>
-                                    <span class="font-bold text-amber-900 block">Conservation & Stockage</span>
-                                    <p id="res-storage-tip" class="text-amber-800 text-[11px] mt-0.5">
-                                        Surélevez les sacs sur des palettes en bois et ventilez l'abri pour éviter toute pourriture avant la date cible.
-                                    </p>
+                                    <label class="form-label" for="input-region">Région</label>
+                                    <select class="form-select" id="input-region"></select>
                                 </div>
                             </div>
+                            <button class="predict-btn" id="btn-run-prediction">
+                                <i data-lucide="sparkles" style="width:16px;height:16px;"></i>
+                                <span>Lancer l'Analyse IA</span>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Graphique de Prévision Chart.js -->
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                        <div class="flex items-center justify-between mb-3">
+                    <!-- Résultat IA -->
+                    <div class="result-card" id="ai-result-card">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                            <span class="badge-ai">
+                                <i data-lucide="zap" style="width:10px;height:10px;"></i> Recommandation IA
+                            </span>
+                            <span class="sim-tag">Prévisionnel</span>
+                        </div>
+                        <p class="result-headline" id="res-headline">Vendre au Marché Castors (Dakar) d'ici 14 jours</p>
+                        <div class="lang-row">
+                            <span class="lang-label"><i data-lucide="languages" style="width:11px;height:11px;"></i> Langue :</span>
+                            <div class="lang-btns" id="lang-selector">
+                                <button class="lang-btn active" data-lang="fr">🇫🇷 FR</button>
+                                <button class="lang-btn" data-lang="wo">🇸🇳 Wolof</button>
+                                <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+                            </div>
+                        </div>
+                        <div class="voice-section">
+                            <button class="voice-play-btn" id="btn-speak" aria-label="Écouter le conseil">
+                                <i data-lucide="volume-2" style="width:18px;height:18px;"></i>
+                            </button>
+                            <div class="voice-info">
+                                <div class="voice-action">
+                                    <span id="voice-action-label">Écouter en Français</span>
+                                    <div class="voice-wave" id="audio-wave" style="display:none;">
+                                        <div class="voice-bar"></div><div class="voice-bar"></div>
+                                        <div class="voice-bar"></div><div class="voice-bar"></div>
+                                        <div class="voice-bar"></div>
+                                    </div>
+                                </div>
+                                <p class="voice-preview" id="voice-preview">"Salam Alaykoum ! Mon conseil d'expert..."</p>
+                            </div>
+                            <span id="lang-badge" style="font-size:10px;font-weight:700;color:#fbbf24;background:rgba(251,191,36,.15);padding:2px 6px;border-radius:6px;flex-shrink:0;">FR</span>
+                        </div>
+                        <div class="result-metrics">
                             <div>
-                                <h4 class="font-bold text-slate-800 text-xs">Courbe Prédictive des Prix (30 jours)</h4>
-                                <p class="text-[10px] text-slate-400">Évolution calculée par le modèle d'IA</p>
+                                <div class="metric-label">Surplus estimé IA</div>
+                                <div class="metric-value" id="res-extra-profit">+269 250 FCFA</div>
+                                <div class="metric-sub" id="res-profit-percent">+38% de marge</div>
                             </div>
-                            <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full">FCFA / unité</span>
-                        </div>
-                        <div class="h-44 w-full">
-                            <canvas id="forecastChart"></canvas>
-                        </div>
-                    </div>
-
-                    <button id="btn-quick-publish" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition">
-                        <i data-lucide="tag" class="w-4 h-4 text-amber-400"></i>
-                        <span>Mettre ce lot en vente sur SunuMarché</span>
-                    </button>
-
-                </div>
-
-            </section>
-
-            <!-- ================= ONGLET 2 : OBSERVATOIRE DES MARCHÉS ================= -->
-            <section id="tab-markets" class="tab-content p-4 space-y-4">
-                
-                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h2 class="font-bold text-slate-800 text-sm">Cours des Marchés du Jour</h2>
-                            <p class="text-xs text-slate-500">Observatoire des prix réels au Sénégal</p>
-                        </div>
-                        <span class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2 py-1 rounded-lg">6 Marchés</span>
-                    </div>
-
-                    <div class="mt-3 flex gap-1.5 overflow-x-auto pb-1" id="market-filter-chips"></div>
-                </div>
-
-                <div id="markets-list-container" class="space-y-3"></div>
-
-            </section>
-
-            <!-- ================= ONGLET 3 : MARKETPLACE EXPRESS ================= -->
-            <section id="tab-market" class="tab-content p-4 space-y-4">
-                
-                <div class="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-4 text-white shadow-md">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <span class="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded">SunuMarché Express</span>
-                            <h2 class="font-extrabold text-base mt-1">Achetez & Vendez sans intermédiaire</h2>
-                            <p class="text-xs text-amber-100 mt-0.5">Contact direct par WhatsApp en 1 clic</p>
-                        </div>
-                        <button id="btn-open-sell-modal" class="bg-white text-slate-900 font-bold text-xs px-3 py-2 rounded-xl shadow active:scale-95 transition flex items-center gap-1">
-                            <i data-lucide="plus-circle" class="w-4 h-4 text-emerald-600"></i>
-                            <span>Vendre</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="space-y-3" id="listings-container"></div>
-
-            </section>
-
-            <!-- ================= ONGLET 4 : CONSEILLER IA VOCAL & CHAT ================= -->
-            <section id="tab-advisor" class="tab-content p-4 space-y-4">
-                
-                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl shadow">
-                            🤖
-                        </div>
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h2 class="font-bold text-slate-800 text-sm">SunuConseiller IA</h2>
-                                <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">En ligne</span>
+                            <div style="text-align:right;">
+                                <div class="metric-label">Date optimale</div>
+                                <div style="font-size:13px;font-weight:800;color:#fff;margin-top:2px;" id="res-best-date">Dim. 4 Octobre</div>
+                                <div class="metric-sub" id="res-wait-days">Dans 14 jours</div>
                             </div>
-                            <p class="text-xs text-slate-500">Posez vos questions sur le stockage, les prix et la négociation.</p>
                         </div>
                     </div>
 
-                    <div class="mt-3 flex flex-wrap gap-1.5" id="quick-prompt-chips">
-                        <button class="quick-chip bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 transition">
-                            🧅 Comment bien conserver l'oignon ?
-                        </button>
-                        <button class="quick-chip bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 transition">
-                            🇸🇳 Naka lañuy dencé soble ?
-                        </button>
-                        <button class="quick-chip bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 transition">
-                            🥜 Quel est le meilleur moment pour l'arachide ?
-                        </button>
-                        <button class="quick-chip bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 transition">
-                            🇬🇧 When should I sell my peanuts?
-                        </button>
-                        <button class="quick-chip bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 text-slate-700 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 transition">
-                            🤝 Naka lañuy waxee ak bana-bana ?
-                        </button>
-                    </div>
-                </div>
-
-                <div id="chat-messages" class="space-y-3">
-                    <div class="bg-emerald-50 border border-emerald-100 rounded-2xl p-3.5 text-xs text-slate-800 shadow-sm flex items-start gap-2.5">
-                        <span class="text-lg">🌾</span>
-                        <div class="flex-1">
-                            <span class="font-bold text-emerald-800 block">SunuConseiller :</span>
-                            <p class="mt-1 leading-relaxed">
-                                Salam Alaykoum ! Je suis votre conseiller agricole intelligent. Posez-moi vos questions ou cliquez sur un sujet au-dessus. Je peux aussi vous répondre à voix haute !
-                            </p>
+                    <!-- Détail -->
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:10px;">
+                            <i data-lucide="calculator" style="width:16px;height:16px;color:var(--primary);"></i>
+                            Détail de la Rentabilité
                         </div>
-                    </div>
-                </div>
+                        <div class="detail-row"><span class="detail-label">Prix estimé à terme</span><span class="detail-val" id="res-unit-price">21 700 FCFA / sac</span></div>
+                        <div class="detail-row"><span class="detail-label">Revenu net total</span><span class="detail-val profit" id="res-net-revenue">975 000 FCFA</span></div>
+                        <div class="detail-row"><span class="detail-label">Frais de transport</span><span class="detail-val cost" id="res-transport-cost">-42 000 FCFA</span></div>
+                        <div class="detail-row"><span class="detail-label">Si vente locale aujourd'hui</span><span class="detail-val muted" id="res-baseline-price">705 750 FCFA</span></div>
 
-                <div class="bg-white rounded-2xl p-2 border border-slate-200 shadow-sm flex items-center gap-2">
-                    <input type="text" id="chat-input" placeholder="Posez une question sur votre récolte..." 
-                        class="flex-1 bg-transparent px-3 py-2 text-xs focus:outline-none text-slate-800 font-medium">
-                    <button id="chat-send-btn" class="w-9 h-9 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow transition active:scale-95">
-                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <div class="tip-box">
+                            <span aria-hidden="true" style="font-size:16px;flex-shrink:0;">💡</span>
+                            <p id="res-storage-tip">Surélevez les sacs sur des palettes en bois et ventilez l'abri pour éviter toute pourriture avant la date cible.</p>
+                        </div>
+
+                        <!-- Accordéon d'Explicabilité IA (Critère Jury IA Responsable) -->
+                        <details class="calc-explainer" id="calc-explainer-details">
+                            <summary class="calc-explainer__summary">
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <i data-lucide="info" style="width:14px;height:14px;color:var(--primary);"></i>
+                                    <span>Comprendre le calcul de l'IA</span>
+                                </div>
+                                <i data-lucide="chevron-down" style="width:14px;height:14px;transition:transform .2s;"></i>
+                            </summary>
+                            <div class="calc-explainer__content">
+                                <div class="formula-box">
+                                    Revenu Net = (Prix Projeté × Quantité × Facteur Conservation) - Coût Transport
+                                </div>
+                                <div class="formula-items">
+                                    <div class="formula-item">
+                                        <span class="formula-item-tag">1. Transport Réel Dégressif</span>
+                                        <p>Calculé sur <strong id="calc-dist">265 km</strong> pour <strong id="calc-tonnage">2.5 tonnes</strong> avec barème routier national sénégalais.</p>
+                                    </div>
+                                    <div class="formula-item">
+                                        <span class="formula-item-tag">2. Tension & Bonus de Marché</span>
+                                        <p>Différentiel de prix entre marchés d'expédition urbains (Castors, Thiaroye) et marchés d'origine ruraux.</p>
+                                    </div>
+                                    <div class="formula-item">
+                                        <span class="formula-item-tag">3. Risque de Périssabilité</span>
+                                        <p>Dépréciation progressive selon la résistance de la culture pour prévenir les pertes au stockage.</p>
+                                    </div>
+                                    <div class="formula-item">
+                                        <span class="formula-item-tag">4. Éthique & Décision Libre</span>
+                                        <p>L'IA conseille et explicite les gains nets. L'agriculteur garde toujours 100% de la décision finale.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- Comparaison marchés -->
+                    <div class="card">
+                        <div class="section-title" style="margin-bottom:10px;">
+                            <i data-lucide="map-pin" style="width:16px;height:16px;color:var(--primary);"></i>
+                            Comparaison des Marchés
+                        </div>
+                        <div id="market-compare-list"></div>
+                    </div>
+
+                    <!-- Graphique -->
+                    <div class="card">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+                            <div>
+                                <div class="section-title">Courbe Prédictive (30 jours)</div>
+                                <div class="section-sub">Modèle basé sur données historiques</div>
+                            </div>
+                            <span class="sim-tag">Simulé</span>
+                        </div>
+                        <div class="chart-wrap"><canvas id="forecastChart"></canvas></div>
+                        <p class="chart-disclaimer">⚠️ Courbe prévisionnelle — vérifiez les cours avant de vendre.</p>
+                    </div>
+
+                    <button id="btn-quick-publish" style="width:100%;padding:13px;background:var(--text-primary);color:var(--bg-frame);font-size:13px;font-weight:800;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s;">
+                        <i data-lucide="tag" style="width:16px;height:16px;color:#fbbf24;"></i>
+                        Mettre ce lot en vente sur SunuMarché
                     </button>
                 </div>
+            </section>
 
+            <!-- TAB 2: OBSERVATOIRE -->
+            <section id="tab-markets" class="tab-pane" aria-label="Observatoire des marchés">
+                <div class="section-pad">
+
+                    <div class="card">
+                        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+                            <div>
+                                <div class="section-title">Cours des Marchés du Jour</div>
+                                <div class="section-sub">Observatoire des prix au Sénégal</div>
+                            </div>
+                            <span class="sim-tag">Données simulées</span>
+                        </div>
+                        <div class="chip-row" id="market-chips" style="margin-bottom:10px;"></div>
+                        <div style="position:relative;">
+                            <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-muted);"></i>
+                            <input type="text" id="market-search-input" class="form-input" placeholder="Rechercher un marché ou une ville..." style="padding-left:32px;font-size:12px;">
+                        </div>
+                        <div class="market-sort-row">
+                            <span style="font-size:11px;font-weight:700;color:var(--text-secondary);">Trier par :</span>
+                            <button class="sort-chip active" data-sort="best">Recommandé</button>
+                            <button class="sort-chip" data-sort="price-desc">Prix le plus élevé</button>
+                            <button class="sort-chip" data-sort="price-asc">Prix le plus bas</button>
+                        </div>
+                    </div>
+                    <div id="markets-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+                </div>
+            </section>
+
+            <!-- TAB 3: MARKETPLACE -->
+            <section id="tab-marketplace" class="tab-pane" aria-label="SunuMarché">
+                <div class="section-pad">
+
+                    <div class="marketplace-hero">
+                        <div>
+                            <span class="mp-label">SunuMarché Express</span>
+                            <div class="mp-title">Vendez sans intermédiaire</div>
+                            <div class="mp-sub">Contact direct par WhatsApp en 1 clic</div>
+                        </div>
+                        <button class="sell-btn" id="btn-open-modal">
+                            <i data-lucide="plus-circle" style="width:16px;height:16px;color:#059669;"></i>
+                            Vendre
+                        </button>
+                    </div>
+
+                    <p class="data-note">Les annonces affichées sont des exemples; vérifiez chaque offre avec le vendeur.</p>
+                    <div class="mp-filter-box">
+                        <div class="chip-row" id="mp-chips" style="margin-bottom:8px;">
+                            <button class="filter-chip active" data-mp-filter="all">Tous les lots</button>
+                            <button class="filter-chip" data-mp-filter="oignon">🧅 Oignon</button>
+                            <button class="filter-chip" data-mp-filter="arachide">🥜 Arachide</button>
+                            <button class="filter-chip" data-mp-filter="mangue">🥭 Mangue</button>
+                            <button class="filter-chip" data-mp-filter="tomate">🍅 Tomate</button>
+                        </div>
+                        <div style="position:relative;">
+                            <i data-lucide="search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-muted);"></i>
+                            <input type="text" id="mp-search-input" class="form-input" placeholder="Filtrer par vendeur, localité..." style="padding-left:32px;font-size:12px;">
+                        </div>
+                    </div>
+                    <div id="listings-container" style="display:flex;flex-direction:column;gap:10px;"></div>
+                </div>
+            </section>
+
+            <!-- TAB 4: CONSEILLER -->
+            <section id="tab-advisor" class="tab-pane" aria-label="Conseiller IA">
+                <div class="section-pad">
+                    <div class="chat-header">
+                        <div class="advisor-row">
+                            <div class="advisor-avatar" aria-hidden="true">🌱</div>
+                            <div>
+                                <div style="display:flex;align-items:center;gap:8px;">
+                                    <span class="advisor-name">SunuCompagnon</span>
+                                    <span class="assistant-mode" id="chat-mode">Vérification de l’assistant…</span>
+                                </div>
+                                <p class="advisor-desc">Stockage · Prix · Négociation · Commercialisation</p>
+                            </div>
+                        </div>
+                        <div class="quick-chips" id="quick-chips">
+                            <button class="quick-chip" data-msg="Comment bien conserver l'oignon ?">🧅 Conserver l'oignon</button>
+                            <button class="quick-chip" data-msg="Naka lañuy dencé soble ?">🇸🇳 Denc soble</button>
+                            <button class="quick-chip" data-msg="Quel est le meilleur moment pour vendre l'arachide ?">🥜 Vendre l'arachide</button>
+                            <button class="quick-chip" data-msg="When should I sell my peanuts?">🇬🇧 Sell peanuts</button>
+                            <button class="quick-chip" data-msg="Comment négocier avec les intermédiaires ?">🤝 Négocier</button>
+                            <button class="quick-chip" data-msg="Quel est le coût du transport ?">🚛 Transport</button>
+                        </div>
+                        <div class="sim-notice">
+                            <i data-lucide="info" style="width:12px;height:12px;"></i>
+                            <span>Conseils généraux, à adapter aux recommandations des services agricoles locaux.</span>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="bubble-bot">
+                            <div class="bubble-bot__head">
+                                <span class="bot-name">🌾 SunuConseiller</span>
+                            </div>
+                            <p>Salam Alaykoum ! Je suis votre conseiller agricole intelligent. Posez-moi vos questions sur le stockage, les marchés ou la négociation. Je peux vous répondre en Français, en Wolof ou en Anglais !</p>
+                        </div>
+                    </div>
+                    <div class="chat-input-row">
+                        <input type="text" class="chat-text-input" id="chat-input" placeholder="Posez une question sur votre récolte..." aria-label="Message">
+                        <button class="chat-send-btn" id="chat-send" aria-label="Envoyer">
+                            <i data-lucide="send" style="width:16px;height:16px;"></i>
+                        </button>
+                    </div>
+                </div>
             </section>
 
         </main>
 
-        <!-- Barre de Navigation Inférieure Mobile (4 Onglets) -->
-        <nav class="bottom-nav">
-            <button class="nav-item active" data-tab="tab-predict">
-                <i data-lucide="brain-circuit"></i>
-                <span>IA Vente</span>
+        <!-- Bottom Nav -->
+        <nav class="bottom-nav" aria-label="Navigation principale">
+            <button class="nav-item active" data-tab="tab-home" aria-label="Accueil">
+                <i data-lucide="home"></i><span>Accueil</span>
             </button>
-            <button class="nav-item" data-tab="tab-markets">
-                <i data-lucide="trending-up"></i>
-                <span>Marchés</span>
+            <button class="nav-item" data-tab="tab-predict" aria-label="IA Vente">
+                <i data-lucide="brain-circuit"></i><span>IA Vente</span>
             </button>
-            <button class="nav-item" data-tab="tab-market">
-                <i data-lucide="shopping-bag"></i>
-                <span>Vendre</span>
+            <button class="nav-item" data-tab="tab-markets" aria-label="Marchés">
+                <i data-lucide="trending-up"></i><span>Marchés</span>
             </button>
-            <button class="nav-item" data-tab="tab-advisor">
-                <i data-lucide="message-square-quote"></i>
-                <span>Conseiller</span>
+            <button class="nav-item" data-tab="tab-marketplace" aria-label="SunuMarché">
+                <i data-lucide="shopping-bag"></i><span>SunuMarché</span>
+            </button>
+            <button class="nav-item" data-tab="tab-advisor" aria-label="Conseiller">
+                <i data-lucide="message-circle"></i><span>Conseil</span>
             </button>
         </nav>
-
     </div>
 
-    <!-- MODALE PUBLIER UNE ANNONCE -->
-    <div id="modal-sell" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-3xl p-5 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <span>🌱</span> Publier un lot à vendre
-                </h3>
-                <button id="close-modal-sell" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+    <section id="assistant-panel" class="assistant-panel" aria-label="SunuCompagnon" aria-hidden="true" hidden>
+        <header class="assistant-panel__header">
+            <div class="assistant-panel__identity">
+                <div class="assistant-panel__avatar" aria-hidden="true">🌱</div>
+                <div>
+                    <h2>SunuCompagnon</h2>
+                    <p>Votre assistant agricole</p>
+                </div>
+            </div>
+            <button id="assistant-close" class="assistant-icon-btn" type="button" aria-label="Fermer SunuCompagnon">
+                <i data-lucide="x" style="width:18px;height:18px;"></i>
+            </button>
+        </header>
+        <div class="assistant-panel__status">
+            <span class="assistant-mode" id="assistant-mode">Vérification de l’assistant…</span>
+            <span>FR · WO · EN</span>
+        </div>
+        <div class="assistant-privacy">Le fil n’est pas conservé après fermeture. En mode Gemini, vos messages sont transmis à Google pour répondre. Évitez d’envoyer vos coordonnées.</div>
+        <div class="assistant-messages chat-messages" id="assistant-messages" aria-live="polite">
+            <div class="bubble-bot"><div class="bubble-bot__head"><span class="bot-name">🌱 SunuCompagnon</span></div><p>Salam, je peux vous aider à comparer les marchés, simuler une vente ou préparer un lot. Que souhaitez-vous faire ?</p></div>
+        </div>
+        <form id="assistant-form" class="chat-input-row assistant-input-row">
+            <input type="text" class="chat-text-input" id="assistant-input" placeholder="Ex. vendre 50 sacs d’oignons…" aria-label="Message à SunuCompagnon" maxlength="1200" autocomplete="off">
+            <button class="chat-send-btn" type="submit" aria-label="Envoyer à SunuCompagnon">
+                <i data-lucide="send" style="width:16px;height:16px;"></i>
+            </button>
+        </form>
+    </section>
+    <button id="assistant-toggle" class="assistant-fab" type="button" aria-label="Ouvrir SunuCompagnon" aria-expanded="false">
+        <i data-lucide="message-circle" style="width:19px;height:19px;"></i><span>SunuCompagnon</span>
+    </button>
+
+    <section id="account-panel" class="account-panel" aria-label="Gestion du compte local" aria-hidden="true" hidden>
+        <header class="account-panel__header">
+            <div><h1>Mon compte</h1><p>Profil enregistré sur cet appareil</p></div>
+            <button id="account-close" class="account-back-btn" type="button" aria-label="Retour à l’application"><i data-lucide="arrow-left" style="width:17px;height:17px;"></i><span>Retour</span></button>
+        </header>
+        <div class="account-local-notice">Compte local uniquement : aucune synchronisation ni authentification serveur. Effacer les données du navigateur supprime le compte.</div>
+        <div id="account-auth-view" class="account-content">
+            <div class="account-tabs" role="tablist" aria-label="Accès au compte">
+                <button type="button" class="account-tab active" data-account-view="login" role="tab" aria-selected="true">Connexion</button>
+                <button type="button" class="account-tab" data-account-view="signup" role="tab" aria-selected="false">Inscription</button>
+            </div>
+            <form id="account-login-form" class="account-form">
+                <label class="form-label" for="account-login-email">Adresse e-mail</label>
+                <input class="form-input" id="account-login-email" name="email" type="email" autocomplete="email" required>
+                <label class="form-label" for="account-login-password">Mot de passe</label>
+                <input class="form-input" id="account-login-password" name="password" type="password" autocomplete="current-password" minlength="8" required>
+                <button class="submit-btn" type="submit">Se connecter</button>
+            </form>
+            <form id="account-signup-form" class="account-form" hidden>
+                <label class="form-label" for="account-signup-name">Nom affiché</label>
+                <input class="form-input" id="account-signup-name" name="name" autocomplete="name" maxlength="80" required>
+                <label class="form-label" for="account-signup-email">Adresse e-mail</label>
+                <input class="form-input" id="account-signup-email" name="email" type="email" autocomplete="email" required>
+                <label class="form-label" for="account-signup-password">Mot de passe (8 caractères minimum)</label>
+                <input class="form-input" id="account-signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+                <label class="form-label" for="account-signup-confirm">Confirmer le mot de passe</label>
+                <input class="form-input" id="account-signup-confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required>
+                <button class="submit-btn" type="submit">Créer mon compte local</button>
+            </form>
+        </div>
+        <div id="account-profile-view" class="account-content" hidden>
+            <p class="account-signed-in">Connecté sur cet appareil</p>
+            <form id="account-profile-form" class="account-form">
+                <label class="form-label" for="account-profile-name">Nom affiché</label>
+                <input class="form-input" id="account-profile-name" name="name" maxlength="80" required>
+                <label class="form-label" for="account-profile-email">Adresse e-mail</label>
+                <input class="form-input" id="account-profile-email" name="email" type="email" readonly>
+                <button class="submit-btn" type="submit">Enregistrer le profil</button>
+            </form>
+            <div class="account-actions">
+                <button id="account-logout" class="account-secondary-btn" type="button">Se déconnecter</button>
+                <button id="account-delete" class="account-delete-btn" type="button">Supprimer ce compte local</button>
+            </div>
+        </div>
+        <p id="account-message" class="account-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- Modal Vendre -->
+    <div id="modal-sell" class="modal-overlay" role="dialog" aria-modal="true" aria-label="Publier un lot">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h2 class="modal-title"><span aria-hidden="true">🌱</span> Publier un lot à vendre</h2>
+                <button class="modal-close" id="close-modal" aria-label="Fermer">
+                    <i data-lucide="x" style="width:16px;height:16px;"></i>
                 </button>
             </div>
-
-            <form id="sell-form" class="space-y-3 text-xs">
+            <form id="sell-form" novalidate style="display:flex;flex-direction:column;gap:10px;">
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Votre Nom / GIE</label>
-                    <input type="text" id="seller-name" required placeholder="Ex: GIE Bokk Jom ou Modou Fall"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <label class="form-label" for="seller-name">Votre Nom / GIE</label>
+                    <input type="text" class="form-input" id="seller-name" required placeholder="Ex: GIE Bokk Jom ou Modou Fall">
                 </div>
-
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Numéro WhatsApp</label>
-                    <input type="tel" id="seller-phone" required placeholder="Ex: 771234567"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <label class="form-label" for="seller-phone">Numéro WhatsApp</label>
+                    <input type="tel" class="form-input" id="seller-phone" required placeholder="Ex: 771234567 ou +221771234567">
                 </div>
-
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid-2">
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Produit</label>
-                        <select id="seller-product" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                        </select>
+                        <label class="form-label" for="seller-product">Produit</label>
+                        <select class="form-select" id="seller-product"></select>
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Quantité</label>
-                        <input type="text" id="seller-qty" required placeholder="Ex: 60 sacs"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <label class="form-label" for="seller-qty">Quantité</label>
+                        <input type="text" class="form-input" id="seller-qty" required placeholder="Ex: 60 sacs">
                     </div>
                 </div>
-
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid-2">
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Prix unitaire (FCFA)</label>
-                        <input type="number" id="seller-price" required placeholder="Ex: 18000"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <label class="form-label" for="seller-price">Prix unitaire (FCFA)</label>
+                        <input type="number" class="form-input" id="seller-price" required placeholder="Ex: 18000" min="100">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Localisation</label>
-                        <input type="text" id="seller-loc" required placeholder="Ex: Podor ou Mboro"
-                            class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <label class="form-label" for="seller-loc">Localisation</label>
+                        <input type="text" class="form-input" id="seller-loc" required placeholder="Ex: Podor ou Mboro">
                     </div>
                 </div>
-
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition mt-2">
-                    Mettre en ligne gratuitement
-                </button>
+                <p id="form-error" style="font-size:11px;color:#dc2626;display:none;"></p>
+                <button type="submit" class="submit-btn">Mettre en ligne gratuitement</button>
             </form>
         </div>
     </div>
 
-    <!-- JAVASCRIPT COMPLET TOUT-EN-UN -->
-    <script>
-        // ================= DONNÉES AGRICOLES (data.js) =================
-        const AGRI_DATA = {
-            products: [
-                {
-                    id: 'oignon',
-                    name: 'Oignon Local (Podor / Gandiol)',
-                    category: 'Maraîchage',
-                    unit: 'Sac de 50 kg',
-                    unitWeightKg: 50,
-                    basePrice: 17500,
-                    emoji: '🧅',
-                    shelfLifeDays: 35,
-                    lossRiskPerWeek: 0.04,
-                    demandTrend: 'Forte hausse attendue fin de récolte'
-                },
-                {
-                    id: 'arachide',
-                    name: 'Arachide Décortiquée (Bassin arachidier)',
-                    category: 'Légumineuse',
-                    unit: 'Sac de 100 kg',
-                    unitWeightKg: 100,
-                    basePrice: 38000,
-                    emoji: '🥜',
-                    shelfLifeDays: 120,
-                    lossRiskPerWeek: 0.01,
-                    demandTrend: 'Stable à hausse (forte demande huileries)'
-                },
-                {
-                    id: 'mangue',
-                    name: 'Mangue Kent (Niayes / Casamance)',
-                    category: 'Fruits',
-                    unit: 'Caisse de 20 kg',
-                    unitWeightKg: 20,
-                    basePrice: 9500,
-                    emoji: '🥭',
-                    shelfLifeDays: 12,
-                    lossRiskPerWeek: 0.12,
-                    demandTrend: 'Très volatile (début de campagne)'
-                },
-                {
-                    id: 'tomate',
-                    name: 'Tomate Fraîche Locale',
-                    category: 'Maraîchage',
-                    unit: 'Caisse de 25 kg',
-                    unitWeightKg: 25,
-                    basePrice: 12500,
-                    emoji: '🍅',
-                    shelfLifeDays: 7,
-                    lossRiskPerWeek: 0.18,
-                    demandTrend: 'Hausse brutale attendue dans 10 jours'
-                },
-                {
-                    id: 'niebe',
-                    name: 'Niébé (Haricot rouge / blanc)',
-                    category: 'Légumineuse',
-                    unit: 'Sac de 50 kg',
-                    unitWeightKg: 50,
-                    basePrice: 24500,
-                    emoji: '🫘',
-                    shelfLifeDays: 150,
-                    lossRiskPerWeek: 0.01,
-                    demandTrend: 'Constante toute l\'année'
-                },
-                {
-                    id: 'piment',
-                    name: 'Piment Frais (Piment oiseau / antillais)',
-                    category: 'Maraîchage',
-                    unit: 'Sac de 25 kg',
-                    unitWeightKg: 25,
-                    basePrice: 21000,
-                    emoji: '🌶️',
-                    shelfLifeDays: 14,
-                    lossRiskPerWeek: 0.08,
-                    demandTrend: 'Forte demande marchés de Dakar'
-                },
-                {
-                    id: 'mais',
-                    name: 'Maïs Grain Local',
-                    category: 'Céréales',
-                    unit: 'Sac de 50 kg',
-                    unitWeightKg: 50,
-                    basePrice: 14000,
-                    emoji: '🌽',
-                    shelfLifeDays: 90,
-                    lossRiskPerWeek: 0.02,
-                    demandTrend: 'Forte demande provenderies avicoles'
-                }
-            ],
-            regions: [
-                { id: 'Saint-Louis', name: 'Saint-Louis (Vallée du Fleuve, Podor, Dagana)' },
-                { id: 'Thiès', name: 'Thiès (Zone des Niayes, Pout, Mboro)' },
-                { id: 'Kaolack', name: 'Kaolack (Bassin Arachidier, Nioro)' },
-                { id: 'Touba', name: 'Diourbel / Touba (Bambey, Mbacké)' },
-                { id: 'Dakar', name: 'Région de Dakar (Rufisque, Sangalkam)' },
-                { id: 'Kolda', name: 'Kolda / Casamance (Vélingara, Sédhiou)' },
-                { id: 'Fatick', name: 'Fatick / Gossas' }
-            ],
-            markets: [
-                {
-                    id: 'castors',
-                    name: 'Marché Castors (Dakar)',
-                    city: 'Dakar',
-                    type: 'Urbain Consommation & Demi-Gros',
-                    volumeRating: 'Très Élevé',
-                    demandBonus: 1.24,
-                    distancesKm: { 'Dakar': 12, 'Thiès': 70, 'Saint-Louis': 260, 'Kaolack': 195, 'Touba': 185, 'Kolda': 450, 'Fatick': 150 },
-                    tags: ['Meilleurs prix au détail', 'Gros pouvoir d\'achat']
-                },
-                {
-                    id: 'thiaroye',
-                    name: 'Marché Syndicat de Thiaroye (Dakar)',
-                    city: 'Dakar / Pikine',
-                    type: 'Pôle Central Grossistes',
-                    volumeRating: 'Maximum (Vente rapide en gros)',
-                    demandBonus: 1.19,
-                    distancesKm: { 'Dakar': 15, 'Thiès': 55, 'Saint-Louis': 245, 'Kaolack': 175, 'Touba': 165, 'Kolda': 430, 'Fatick': 135 },
-                    tags: ['Écoulement immédiat', 'Gros volumes acceptés']
-                },
-                {
-                    id: 'kaolack',
-                    name: 'Marché Central de Kaolack',
-                    city: 'Kaolack',
-                    type: 'Carrefour Commercial Sous-Régional',
-                    volumeRating: 'Élevé',
-                    demandBonus: 1.08,
-                    distancesKm: { 'Dakar': 195, 'Thiès': 135, 'Saint-Louis': 295, 'Kaolack': 8, 'Touba': 85, 'Kolda': 255, 'Fatick': 45 },
-                    tags: ['Bassin arachidier & céréales', 'Transit Gambie/Mali']
-                },
-                {
-                    id: 'diaobe',
-                    name: 'Marché International de Diaobé',
-                    city: 'Vélingara / Kolda',
-                    type: 'Marché Transfrontalier',
-                    volumeRating: 'Gigantesque le mercredi',
-                    demandBonus: 1.15,
-                    distancesKm: { 'Dakar': 450, 'Thiès': 410, 'Saint-Louis': 540, 'Kaolack': 255, 'Touba': 335, 'Kolda': 45, 'Fatick': 290 },
-                    tags: ['Acheteurs de Guinée & Mali', 'Fruits & bétail']
-                },
-                {
-                    id: 'touba',
-                    name: 'Marché Okass de Touba',
-                    city: 'Touba',
-                    type: 'Grand Marché Urbain & Religieux',
-                    volumeRating: 'Très Élevé',
-                    demandBonus: 1.14,
-                    distancesKm: { 'Dakar': 185, 'Thiès': 115, 'Saint-Louis': 180, 'Kaolack': 85, 'Touba': 5, 'Kolda': 335, 'Fatick': 110 },
-                    tags: ['Consommation de masse', 'Transactions cash']
-                },
-                {
-                    id: 'saintlouis',
-                    name: 'Marché Ndar (Saint-Louis)',
-                    city: 'Saint-Louis',
-                    type: 'Pôle Régional Nord',
-                    volumeRating: 'Moyen à Bon',
-                    demandBonus: 1.02,
-                    distancesKm: { 'Dakar': 260, 'Thiès': 200, 'Saint-Louis': 10, 'Kaolack': 295, 'Touba': 180, 'Kolda': 540, 'Fatick': 240 },
-                    tags: ['Proximité Mauritanie', 'Transport réduit si Nord']
-                }
-            ],
-            sampleListings: [
-                { id: 'L001', sellerName: 'Moussa Diop', sellerPhone: '+221775123456', product: 'oignon', quantity: '80 sacs (50kg)', pricePerUnit: 18500, location: 'Podor (Saint-Louis)', verified: true, badge: 'Récolte certifiée', image: '🧅' },
-                { id: 'L002', sellerName: 'Aminata Ndiaye', sellerPhone: '+221783456789', product: 'arachide', quantity: '3 tonnes (30 sacs)', pricePerUnit: 39500, location: 'Nioro du Rip (Kaolack)', verified: true, badge: 'Qualité Export', image: '🥜' },
-                { id: 'L003', sellerName: 'Cheikh Tidiane Sow', sellerPhone: '+221768890123', product: 'mangue', quantity: '120 caisses', pricePerUnit: 9800, location: 'Pout (Thiès)', verified: false, badge: 'Cueillette fraîche', image: '🥭' },
-                { id: 'L004', sellerName: 'Fatou Bintou Ba', sellerPhone: '+221709988776', product: 'piment', quantity: '40 sacs (25kg)', pricePerUnit: 22000, location: 'Sangalkam (Rufisque)', verified: true, badge: 'Piment Extra Piquant', image: '🌶️' }
-            ],
-            aiKnowledgeBase: [
-                {
-                    keywords: ['oignon', 'conserver', 'stockage', 'pourrir', 'gandiol', 'podor'],
-                    response: "Pour maximiser le prix de l'oignon local et attendre la hausse dans 2 à 3 semaines : étalez les bulbes sur des claies surélevées à l'ombre dans un hangar bien aéré. Ne les enfermez jamais dans des sacs plastiques hermétiques ! Vous éviterez la pourriture tout en gagnant jusqu'à +3 500 FCFA par sac lors du pic de demande."
-                },
-                {
-                    keywords: ['arachide', 'vente', 'kaolack', 'huilerie', 'prix'],
-                    response: "Le marché de l'arachide à Kaolack et Touba est très dynamique. Pour obtenir le meilleur tarif : assurez-vous que le taux d'impuretés soit sous 2% et le séchage parfait. Les grossistes de Thiaroye paient actuellement jusqu'à 39 500 FCFA le sac de 100 kg pour les lots triés."
-                },
-                {
-                    keywords: ['transport', 'cout', 'camion', 'fret', 'car rapide'],
-                    response: "Le coût moyen du fret agricole au Sénégal est d'environ 12 à 16 FCFA par kilo pour 100 km (environ 700 à 1 200 FCFA par sac de 50 kg entre Saint-Louis/Thiès et Dakar). Conseil stratégique : regroupez-vous en GIE avec d'autres producteurs pour remplir un camion 10 tonnes et diviser vos frais par deux !"
-                },
-                {
-                    keywords: ['mangue', 'perissable', 'casamance', 'export', 'dakar'],
-                    response: "Attention avec la mangue : denrée hautement périssable ! Ne conservez pas plus de 5 jours sans réfrigération. Le Marché Castors à Dakar offre les meilleurs prix, mais le transport doit impérativement se faire de nuit pour éviter les coups de chaleur."
-                },
-                {
-                    keywords: ['négocier', 'banabana', 'intermédiaire', 'prix fort'],
-                    response: "Pour négocier fermement avec les Bana-bana : montrez-leur les cours officiels affichés sur SunuAgri IA. Ne cédez jamais à crédit sans reçu signé. En vendant directement au Marché Syndicat de Thiaroye ou via notre Marketplace, vous contournez 2 intermédiaires et gagnez 20% à 25% de marge nette en plus."
-                }
-            ]
-        };
-
-        // ================= MOTEUR D'IA PRÉDICTIF (ai-engine.js) =================
-        class AgriPredictEngine {
-            constructor(data) {
-                this.data = data;
-            }
-
-            calculateTransportCost(distanceKm, weightKg) {
-                if (distanceKm <= 15) return 3000 + (weightKg * 1.5);
-                return Math.round((distanceKm * weightKg * 0.135) + 5000);
-            }
-
-            generateForecastCurve(product, market) {
-                const points = [];
-                const days = [0, 3, 7, 10, 14, 18, 21, 25, 30];
-                const baseCurrentPrice = Math.round(product.basePrice * market.demandBonus);
-
-                let peakDay = 12;
-                let maxGrowthFactor = 1.18;
-
-                if (product.id === 'oignon') { peakDay = 14; maxGrowthFactor = 1.25; }
-                else if (product.id === 'tomate') { peakDay = 8; maxGrowthFactor = 1.20; }
-                else if (product.id === 'arachide') { peakDay = 22; maxGrowthFactor = 1.15; }
-                else if (product.id === 'mangue') { peakDay = 6; maxGrowthFactor = 1.14; }
-
-                days.forEach(day => {
-                    let factor = 1.0;
-                    if (day <= peakDay) {
-                        factor = 1.0 + ((maxGrowthFactor - 1.0) * (day / peakDay));
-                    } else {
-                        const decay = (day - peakDay) * 0.015;
-                        factor = maxGrowthFactor - decay;
-                    }
-                    const daysLoss = (day / 7) * product.lossRiskPerWeek;
-                    const projectedPrice = Math.round(baseCurrentPrice * factor);
-
-                    points.push({
-                        day: day,
-                        label: day === 0 ? "Aujourd'hui" : `+${day}j`,
-                        projectedPrice: projectedPrice,
-                        effectiveValueFactor: (1 - Math.min(daysLoss, 0.40))
-                    });
-                });
-
-                return points;
-            }
-
-            optimizeSale(productId, quantity, userRegion) {
-                const product = this.data.products.find(p => p.id === productId);
-                const totalWeightKg = quantity * product.unitWeightKg;
-                const evaluation = [];
-
-                this.data.markets.forEach(market => {
-                    const distance = market.distancesKm[userRegion] || 150;
-                    const transportCost = this.calculateTransportCost(distance, totalWeightKg);
-                    const forecastCurve = this.generateForecastCurve(product, market);
-
-                    const currentPricePerUnit = forecastCurve[0].projectedPrice;
-                    const currentGrossRevenue = currentPricePerUnit * quantity;
-                    const currentNetRevenue = currentGrossRevenue - transportCost;
-
-                    let bestDayIndex = 0;
-                    let maxNetRevenue = currentNetRevenue;
-
-                    forecastCurve.forEach((pt, index) => {
-                        const potentialGross = (pt.projectedPrice * quantity) * pt.effectiveValueFactor;
-                        const potentialNet = potentialGross - transportCost;
-                        if (potentialNet > maxNetRevenue) {
-                            maxNetRevenue = potentialNet;
-                            bestDayIndex = index;
-                        }
-                    });
-
-                    const bestPoint = forecastCurve[bestDayIndex];
-
-                    evaluation.push({
-                        market: market,
-                        distanceKm: distance,
-                        transportCost: transportCost,
-                        currentPricePerUnit: currentPricePerUnit,
-                        currentNetRevenue: currentNetRevenue,
-                        bestDay: bestPoint.day,
-                        bestDayLabel: bestPoint.label,
-                        bestProjectedPrice: bestPoint.projectedPrice,
-                        optimalNetRevenue: Math.round(maxNetRevenue),
-                        forecastCurve: forecastCurve
-                    });
-                });
-
-                evaluation.sort((a, b) => b.optimalNetRevenue - a.optimalNetRevenue);
-                const bestOption = evaluation[0];
-                const localOption = evaluation.reduce((min, cur) => cur.distanceKm < min.distanceKm ? cur : min, evaluation[0]);
-                const baselineRevenue = localOption.currentNetRevenue;
-                const extraProfit = Math.max(0, bestOption.optimalNetRevenue - baselineRevenue);
-                const profitBoostPercent = baselineRevenue > 0 ? Math.round((extraProfit / baselineRevenue) * 100) : 0;
-
-                const targetDate = new Date();
-                targetDate.setDate(targetDate.getDate() + bestOption.bestDay);
-                const formattedDateFr = targetDate.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
-                const formattedDateEn = targetDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
-                // Textes vocaux dans les 3 langues : Français, Wolof, Anglais
-                const speechTexts = {
-                    fr: bestOption.bestDay === 0
-                        ? `Salam Alaykoum ! D'après l'analyse SunuAgri IA, vendez dès aujourd'hui vos ${quantity} ${product.unit} au ${bestOption.market.name}. Les cours sont au plus haut !`
-                        : `Salam Alaykoum ! Mon conseil d'expert : attendez environ ${bestOption.bestDay} jours, jusqu'au ${formattedDateFr}. En vendant au ${bestOption.market.name}, vous réaliserez un bénéfice supplémentaire estimé à ${extraProfit.toLocaleString('fr-FR')} Francs CFA !`,
-                    wo: bestOption.bestDay === 0
-                        ? `Salam Alaykoum ! SunuAgri IA mi ngi lay xamal : jaayal tey jii sa ${quantity} ${product.name} ca ${bestOption.market.name}. Jamono bii la prix bi gënë baax !`
-                        : `Salam Alaykoum ! SunuAgri IA mi ngi lay xamal : bul jaay tey jii. Xaaral ${bestOption.bestDay} fan, ba ${formattedDateFr}. Soo ko jaayee ca ${bestOption.market.name}, danga am bénéfice bu mag bu tollu ci ${extraProfit.toLocaleString('fr-FR')} Francs CFA !`,
-                    en: bestOption.bestDay === 0
-                        ? `Hello! According to SunuAgri AI analysis, sell your ${quantity} units of ${product.name} today at ${bestOption.market.name}. Market prices are at their peak!`
-                        : `Hello! SunuAgri AI expert advice: Do not sell immediately. Hold your stock and wait about ${bestOption.bestDay} days, until ${formattedDateEn}. Selling at ${bestOption.market.name} will generate an estimated extra profit of ${extraProfit.toLocaleString('fr-FR')} CFA Francs!`
-                };
-
-                const headlines = {
-                    fr: `Vendre au ${bestOption.market.name} d'ici ${bestOption.bestDay === 0 ? "aujourd'hui" : bestOption.bestDay + " jours"}`,
-                    wo: `Jaay ca ${bestOption.market.name} ci ${bestOption.bestDay === 0 ? "tey jii" : bestOption.bestDay + " fan"}`,
-                    en: `Sell at ${bestOption.market.name} within ${bestOption.bestDay === 0 ? "today" : bestOption.bestDay + " days"}`
-                };
-
-                const storageTips = {
-                    fr: product.shelfLifeDays <= 14 
-                        ? "⚠️ Denrée très fragile : stockez à l'ombre totale et transportez très tôt le matin ou de nuit."
-                        : "💡 Bon potentiel de garde : surélevez les sacs sur palettes en bois pour éviter l'humidité.",
-                    wo: product.shelfLifeDays <= 14
-                        ? "⚠️ Meññeef mu gaawe yàqu : dencal ci ker gi, bu ko tëj ci tangoor, te nga yóbbu ko ci suba tél."
-                        : "💡 Denc ko bu baax : tegal saag yi ci palet u bant ngir bañ mu tooy ci suuf si.",
-                    en: product.shelfLifeDays <= 14
-                        ? "⚠️ Highly perishable crop: Store in full shade and transport early morning or overnight."
-                        : "💡 Good storage capacity: Elevate bags on wooden pallets to prevent soil moisture."
-                };
-
-                return {
-                    product: product,
-                    quantity: quantity,
-                    bestMarket: bestOption.market,
-                    bestDay: bestOption.bestDay,
-                    bestDateFormatted: formattedDateFr,
-                    recommendedPrice: bestOption.bestProjectedPrice,
-                    optimalNetRevenue: bestOption.optimalNetRevenue,
-                    baselineRevenue: baselineRevenue,
-                    extraProfit: extraProfit,
-                    profitBoostPercent: profitBoostPercent,
-                    transportCost: bestOption.transportCost,
-                    distanceKm: bestOption.distanceKm,
-                    forecastCurve: bestOption.forecastCurve,
-                    aiSummary: {
-                        headlines: headlines,
-                        recommendationHeadline: headlines.fr,
-                        storageTips: storageTips,
-                        storageTip: storageTips.fr,
-                        speechTexts: speechTexts,
-                        speechText: speechTexts.fr
-                    }
-                };
-            }
-        }
-
-        const agriEngine = new AgriPredictEngine(AGRI_DATA);
-
-        // ================= CONTRÔLEUR D'INTERFACE (app.js) =================
-        let forecastChartInstance = null;
-        let lastAiResult = null;
-        let activeMarketFilter = 'oignon';
-        let currentVoiceLang = 'fr'; // 'fr', 'wo', 'en'
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initClock();
-            populateSelects();
-            setupTabNavigation();
-            setupPredictionEngine();
-            setupMarketsTab();
-            setupMarketplace();
-            setupAdvisorChat();
-            setupPresentation();
-            runPrediction();
-            if (window.lucide) lucide.createIcons();
-        });
-
-        function initClock() {
-            const timeEl = document.getElementById('current-time');
-            const updateTime = () => {
-                const now = new Date();
-                timeEl.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            };
-            updateTime();
-            setInterval(updateTime, 10000);
-        }
-
-        function populateSelects() {
-            const productSelect = document.getElementById('input-product');
-            const sellerProductSelect = document.getElementById('seller-product');
-            const regionSelect = document.getElementById('input-region');
-            const unitLabel = document.getElementById('unit-label');
-
-            AGRI_DATA.products.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = `${p.emoji} ${p.name} (${p.unit})`;
-                productSelect.appendChild(opt.cloneNode(true));
-                sellerProductSelect.appendChild(opt.cloneNode(true));
-            });
-
-            AGRI_DATA.regions.forEach(r => {
-                const opt = document.createElement('option');
-                opt.value = r.id;
-                opt.textContent = r.name;
-                regionSelect.appendChild(opt);
-            });
-
-            productSelect.addEventListener('change', (e) => {
-                const prod = AGRI_DATA.products.find(p => p.id === e.target.value);
-                if (prod) unitLabel.textContent = prod.unit.split(' ')[0] || 'unités';
-            });
-        }
-
-        function setupTabNavigation() {
-            const navItems = document.querySelectorAll('.nav-item');
-            const tabContents = document.querySelectorAll('.tab-content');
-
-            navItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const targetTab = item.getAttribute('data-tab');
-                    navItems.forEach(btn => btn.classList.remove('active'));
-                    item.classList.add('active');
-
-                    tabContents.forEach(tab => {
-                        if (tab.id === targetTab) tab.classList.add('active');
-                        else tab.classList.remove('active');
-                    });
-                    if (window.lucide) lucide.createIcons();
-                });
-            });
-        }
-
-        function setupPredictionEngine() {
-            document.getElementById('btn-run-prediction').addEventListener('click', runPrediction);
-            document.getElementById('btn-speak-advice').addEventListener('click', toggleSpeechAdvice);
-            document.getElementById('btn-quick-publish').addEventListener('click', () => {
-                document.querySelector('[data-tab="tab-market"]').click();
-                document.getElementById('modal-sell').classList.remove('hidden');
-            });
-
-            // Sélecteur de langue vocale
-            const langBtns = document.querySelectorAll('#voice-lang-selector .lang-btn');
-            langBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    currentVoiceLang = btn.dataset.lang;
-                    langBtns.forEach(b => {
-                        b.classList.remove('active', 'bg-emerald-500', 'text-slate-950');
-                        b.classList.add('bg-white/10', 'text-white');
-                    });
-                    btn.classList.add('active', 'bg-emerald-500', 'text-slate-950');
-                    btn.classList.remove('bg-white/10', 'text-white');
-
-                    updateVoiceCardUI();
-
-                    // Si la voix tournait déjà, relancer immédiatement dans la langue choisie !
-                    if (window.speechSynthesis && window.speechSynthesis.speaking) {
-                        window.speechSynthesis.cancel();
-                        toggleSpeechAdvice();
-                    }
-                });
-            });
-        }
-
-        function updateVoiceCardUI() {
-            if (!lastAiResult || !lastAiResult.aiSummary) return;
-
-            const badge = document.getElementById('current-lang-badge');
-            const label = document.getElementById('speech-action-label');
-            const preview = document.getElementById('speech-preview-text');
-            const headline = document.getElementById('res-headline');
-            const storageTip = document.getElementById('res-storage-tip');
-
-            if (currentVoiceLang === 'wo') {
-                if (badge) badge.textContent = 'WOLOF 🇸🇳';
-                if (label) label.textContent = 'Déglu ci Wolof 🇸🇳';
-                if (preview) preview.textContent = `"${lastAiResult.aiSummary.speechTexts.wo.slice(0, 65)}..."`;
-                if (headline) headline.textContent = lastAiResult.aiSummary.headlines.wo;
-                if (storageTip) storageTip.textContent = lastAiResult.aiSummary.storageTips.wo;
-            } else if (currentVoiceLang === 'en') {
-                if (badge) badge.textContent = 'ENGLISH 🇬🇧';
-                if (label) label.textContent = 'Listen in English 🇬🇧';
-                if (preview) preview.textContent = `"${lastAiResult.aiSummary.speechTexts.en.slice(0, 65)}..."`;
-                if (headline) headline.textContent = lastAiResult.aiSummary.headlines.en;
-                if (storageTip) storageTip.textContent = lastAiResult.aiSummary.storageTips.en;
-            } else {
-                if (badge) badge.textContent = 'FRANÇAIS 🇫🇷';
-                if (label) label.textContent = 'Écouter en Français 🇫🇷';
-                if (preview) preview.textContent = `"${lastAiResult.aiSummary.speechTexts.fr.slice(0, 65)}..."`;
-                if (headline) headline.textContent = lastAiResult.aiSummary.headlines.fr;
-                if (storageTip) storageTip.textContent = lastAiResult.aiSummary.storageTips.fr;
-            }
-        }
-
-        function runPrediction() {
-            const productId = document.getElementById('input-product').value || 'oignon';
-            const quantity = parseInt(document.getElementById('input-quantity').value) || 50;
-            const region = document.getElementById('input-region').value || 'Saint-Louis';
-
-            const result = agriEngine.optimizeSale(productId, quantity, region);
-            lastAiResult = result;
-
-            document.getElementById('res-extra-profit').textContent = `+${result.extraProfit.toLocaleString('fr-FR')} FCFA`;
-            document.getElementById('res-profit-percent').textContent = `+${result.profitBoostPercent}% de marge nette`;
-            document.getElementById('res-best-date').textContent = result.bestDateFormatted;
-            document.getElementById('res-wait-days').textContent = result.bestDay === 0 ? "Aujourd'hui" : `Dans ${result.bestDay} jours`;
-
-            document.getElementById('res-unit-price').textContent = `${result.recommendedPrice.toLocaleString('fr-FR')} FCFA / ${result.product.unit}`;
-            document.getElementById('res-net-revenue').textContent = `${result.optimalNetRevenue.toLocaleString('fr-FR')} FCFA`;
-            document.getElementById('res-transport-cost').textContent = `-${result.transportCost.toLocaleString('fr-FR')} FCFA (${result.distanceKm} km)`;
-            document.getElementById('res-baseline-price').textContent = `${result.baselineRevenue.toLocaleString('fr-FR')} FCFA`;
-
-            updateVoiceCardUI();
-            renderForecastChart(result.forecastCurve, result.bestDay);
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function renderForecastChart(curveData, bestDay) {
-            const ctx = document.getElementById('forecastChart');
-            if (!ctx) return;
-
-            const labels = curveData.map(c => c.label);
-            const dataValues = curveData.map(c => c.projectedPrice);
-            const pointBackgroundColors = curveData.map(c => c.day === bestDay ? '#f59e0b' : '#10b981');
-            const pointRadius = curveData.map(c => c.day === bestDay ? 7 : 4);
-
-            if (forecastChartInstance) forecastChartInstance.destroy();
-
-            forecastChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Prix Prévisionnel (FCFA)',
-                        data: dataValues,
-                        borderColor: '#059669',
-                        backgroundColor: 'rgba(5, 150, 105, 0.08)',
-                        fill: true,
-                        tension: 0.35,
-                        pointBackgroundColor: pointBackgroundColors,
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointRadius: pointRadius
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => `${ctx.parsed.y.toLocaleString('fr-FR')} FCFA`
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
-                            ticks: { font: { size: 10 }, callback: v => `${v / 1000}k` }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { font: { size: 10 } }
-                        }
-                    }
-                }
-            });
-        }
-
-        function toggleSpeechAdvice() {
-            const waveEl = document.getElementById('audio-wave');
-            if (!('speechSynthesis' in window)) {
-                alert("Synthèse vocale non supportée par ce navigateur.");
-                return;
-            }
-
-            if (window.speechSynthesis.speaking) {
-                window.speechSynthesis.cancel();
-                if (waveEl) waveEl.classList.add('hidden');
-                return;
-            }
-
-            if (!lastAiResult || !lastAiResult.aiSummary) return;
-
-            const textToSpeak = lastAiResult.aiSummary.speechTexts[currentVoiceLang] || lastAiResult.aiSummary.speechText;
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            const voices = window.speechSynthesis.getVoices();
-
-            if (currentVoiceLang === 'en') {
-                utterance.lang = 'en-US';
-                utterance.rate = 1.0;
-                const enVoice = voices.find(v => v.lang.startsWith('en'));
-                if (enVoice) utterance.voice = enVoice;
-            } else if (currentVoiceLang === 'wo') {
-                // Cadence adaptée pour le Wolof phonétique
-                utterance.lang = 'fr-SN';
-                utterance.rate = 0.92;
-                utterance.pitch = 1.05;
-                const frVoice = voices.find(v => v.lang.startsWith('fr'));
-                if (frVoice) utterance.voice = frVoice;
-            } else {
-                utterance.lang = 'fr-FR';
-                utterance.rate = 1.0;
-                const frVoice = voices.find(v => v.lang.startsWith('fr'));
-                if (frVoice) utterance.voice = frVoice;
-            }
-
-            if (waveEl) waveEl.classList.remove('hidden');
-            utterance.onend = () => { if (waveEl) waveEl.classList.add('hidden'); };
-            utterance.onerror = () => { if (waveEl) waveEl.classList.add('hidden'); };
-
-            window.speechSynthesis.speak(utterance);
-        }
-
-        function setupMarketsTab() {
-            const chipsContainer = document.getElementById('market-filter-chips');
-            const marketsList = document.getElementById('markets-list-container');
-            if (!chipsContainer || !marketsList) return;
-
-            chipsContainer.innerHTML = '';
-            AGRI_DATA.products.forEach(p => {
-                const chip = document.createElement('button');
-                chip.className = `px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition border ${p.id === activeMarketFilter ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-100 text-slate-700 border-slate-200'}`;
-                chip.textContent = `${p.emoji} ${p.name.split(' ')[0]}`;
-                chip.addEventListener('click', () => {
-                    activeMarketFilter = p.id;
-                    setupMarketsTab();
-                });
-                chipsContainer.appendChild(chip);
-            });
-
-            const selectedProd = AGRI_DATA.products.find(p => p.id === activeMarketFilter) || AGRI_DATA.products[0];
-            marketsList.innerHTML = '';
-
-            AGRI_DATA.markets.forEach(m => {
-                const estPrice = Math.round(selectedProd.basePrice * m.demandBonus);
-                const isUp = m.demandBonus >= 1.12;
-
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-2xl p-3.5 border border-slate-100 shadow-sm flex items-center justify-between';
-                card.innerHTML = `
-                    <div class="flex-1">
-                        <h4 class="font-bold text-slate-800 text-xs">${m.name}</h4>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-[10px] text-slate-500">${m.type}</span>
-                            <span class="text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">${m.volumeRating}</span>
-                        </div>
-                    </div>
-                    <div class="text-right pl-3 border-l border-slate-100">
-                        <div class="text-xs font-black text-slate-900">${estPrice.toLocaleString('fr-FR')} FCFA</div>
-                        <span class="inline-flex text-[10px] font-bold mt-1 px-1.5 py-0.5 rounded ${isUp ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
-                            ${isUp ? '↑ Recherché' : '→ Stable'}
-                        </span>
-                    </div>
-                `;
-                marketsList.appendChild(card);
-            });
-        }
-
-        function setupMarketplace() {
-            const sellModal = document.getElementById('modal-sell');
-            document.getElementById('btn-open-sell-modal').addEventListener('click', () => sellModal.classList.remove('hidden'));
-            document.getElementById('close-modal-sell').addEventListener('click', () => sellModal.classList.add('hidden'));
-
-            renderListings();
-
-            document.getElementById('sell-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const name = document.getElementById('seller-name').value;
-                const phone = document.getElementById('seller-phone').value;
-                const product = document.getElementById('seller-product').value;
-                const qty = document.getElementById('seller-qty').value;
-                const price = parseInt(document.getElementById('seller-price').value);
-                const loc = document.getElementById('seller-loc').value;
-                const prodObj = AGRI_DATA.products.find(p => p.id === product);
-
-                AGRI_DATA.sampleListings.unshift({
-                    id: 'L' + Date.now().toString().slice(-4),
-                    sellerName: name,
-                    sellerPhone: phone.startsWith('+') ? phone : '+221' + phone.replace(/\s+/g, ''),
-                    product: product,
-                    quantity: qty,
-                    pricePerUnit: price,
-                    location: loc,
-                    verified: true,
-                    badge: 'Nouveau lot',
-                    image: prodObj ? prodObj.emoji : '📦'
-                });
-
-                renderListings();
-                document.getElementById('sell-form').reset();
-                sellModal.classList.add('hidden');
-                alert("Votre lot a été publié avec succès sur SunuMarché !");
-            });
-        }
-
-        function renderListings() {
-            const container = document.getElementById('listings-container');
-            container.innerHTML = '';
-
-            AGRI_DATA.sampleListings.forEach(l => {
-                const prod = AGRI_DATA.products.find(p => p.id === l.product);
-                const prodName = prod ? prod.name : l.product;
-                const cleanPhone = l.sellerPhone.replace(/[^0-9]/g, '');
-                const waMsg = encodeURIComponent(`Salam Alaykoum ${l.sellerName}, j'ai vu votre offre sur SunuAgri IA pour ${l.quantity} de ${prodName} à ${l.pricePerUnit} FCFA. Est-ce toujours disponible ?`);
-                const waUrl = `https://wa.me/${cleanPhone}?text=${waMsg}`;
-
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3';
-                card.innerHTML = `
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-3">
-                            <span class="text-3xl p-2 bg-slate-50 rounded-2xl">${l.image}</span>
-                            <div>
-                                <h4 class="font-extrabold text-slate-800 text-xs">${prodName}</h4>
-                                <p class="text-[11px] text-slate-500">${l.quantity} • ${l.location}</p>
-                                <span class="text-[9px] bg-amber-50 text-amber-800 px-1.5 py-0.5 rounded font-bold">${l.badge}</span>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="font-black text-xs text-slate-900 block">${l.pricePerUnit.toLocaleString('fr-FR')} FCFA</span>
-                        </div>
-                    </div>
-                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
-                        <span class="text-[11px] text-slate-500">${l.sellerName}</span>
-                        <a href="${waUrl}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition">
-                            <i data-lucide="phone-call" class="w-3.5 h-3.5"></i>
-                            <span>WhatsApp</span>
-                        </a>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            if (window.lucide) lucide.createIcons();
-        }
-
-        function setupAdvisorChat() {
-            const chatContainer = document.getElementById('chat-messages');
-            const chatInput = document.getElementById('chat-input');
-            const sendBtn = document.getElementById('chat-send-btn');
-            const quickChips = document.querySelectorAll('.quick-chip');
-
-            quickChips.forEach(chip => {
-                chip.addEventListener('click', () => {
-                    sendUserMessage(chip.textContent.trim().replace(/^[^\wÀ-ÿ]+/, ''));
-                });
-            });
-
-            sendBtn.addEventListener('click', () => {
-                const txt = chatInput.value.trim();
-                if (txt) { sendUserMessage(txt); chatInput.value = ''; }
-            });
-
-            chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendBtn.click(); });
-
-            function sendUserMessage(msgText) {
-                appendMsg('user', msgText, 'fr');
-                setTimeout(() => {
-                    const qLower = msgText.toLowerCase();
-                    let reply = "";
-                    let detectedLang = 'fr';
-
-                    // Détection Wolof
-                    if (qLower.includes('soble') || qLower.includes('denc') || qLower.includes('naka') || qLower.includes('wax') || qLower.includes('gerte') || qLower.includes('gerté') || qLower.includes('jaay') || qLower.includes('bana')) {
-                        detectedLang = 'wo';
-                        if (qLower.includes('soble') || qLower.includes('denc')) {
-                            reply = "Salam Alaykoum ! Ngir denc sa soble bu baax te bañ mu yàqu : bu ko tëj mukk ci saag pulastik ! Tegal ko ci kaw palet u bant ci bérab bu am ngelaw bu baax. Nii danga koy man denc lu yàgg te jaay ko bu prix bi yéégee ba am bénéfice bu mag !";
-                        } else if (qLower.includes('bana')) {
-                            reply = "Ngir wax ak bana-bana yi te ñu bañ la nax : won leen prix yi nekk ci SunuAgri IA te bu leen may bor ci amul lijaasa. Soo jëflantee ak Marché Thiaroye direct, danga am 25% ci bénéfice bu mag !";
-                        } else {
-                            reply = "Salam Alaykoum ! SunuAgri IA mi ngi lay xamal ni marché yi ci Dakar (Castors ak Thiaroye) ñoo gënë dihé xaalis. Bàyyil sa meññeef ci jamono ju baax ngir am njariñ bu rëy !";
-                        }
-                    }
-                    // Détection Anglais
-                    else if (qLower.includes('peanut') || qLower.includes('onion') || qLower.includes('when') || qLower.includes('store') || qLower.includes('how') || qLower.includes('market') || qLower.includes('price')) {
-                        detectedLang = 'en';
-                        if (qLower.includes('peanut') || qLower.includes('when')) {
-                            reply = "Hello! The best period to sell peanuts in Senegal is after the initial harvest rush, when oil mills and export buyers in Touba and Kaolack pay up to 39,500 CFA Francs per 100kg bag for well-dried produce.";
-                        } else if (qLower.includes('onion') || qLower.includes('store')) {
-                            reply = "Hello! To properly store onions: lay bulbs on elevated wooden slatted pallets in a shaded, well-ventilated shelter. Avoid plastic sacks completely. Proper ventilation avoids rot while waiting for peak market prices!";
-                        } else {
-                            reply = "Hello! SunuAgri AI analysis shows that central markets like Thiaroye and Castors offer significantly higher profit margins than local intermediaries. Check our AI prediction tab for exact timing!";
-                        }
-                    }
-                    // Français par défaut
-                    else {
-                        detectedLang = 'fr';
-                        reply = "Excellente question ! D'après les cours actuels au Sénégal, la meilleure stratégie consiste à surveiller l'évolution des prix sur le Marché Castors et Thiaroye, et d'éviter les intermédiaires excessifs.";
-                        for (const item of AGRI_DATA.aiKnowledgeBase) {
-                            if (item.keywords.some(k => qLower.includes(k))) {
-                                reply = item.response;
-                                break;
-                            }
-                        }
-                    }
-
-                    appendMsg('bot', reply, detectedLang);
-                }, 400);
-            }
-
-            function appendMsg(sender, text, lang = 'fr') {
-                const div = document.createElement('div');
-                if (sender === 'user') {
-                    div.className = 'bg-slate-900 text-white rounded-2xl rounded-tr-none p-3 text-xs ml-8 shadow-sm';
-                    div.textContent = text;
-                } else {
-                    const langFlag = lang === 'wo' ? '🇸🇳 Wolof' : (lang === 'en' ? '🇬🇧 English' : '🇫🇷 Français');
-                    div.className = 'bg-emerald-50 border border-emerald-100 rounded-2xl rounded-tl-none p-3.5 text-xs text-slate-800 shadow-sm space-y-2';
-                    div.innerHTML = `
-                        <div class="flex items-start gap-2">
-                            <span class="text-base">🌾</span>
-                            <div class="flex-1 leading-relaxed">${text}</div>
-                        </div>
-                        <div class="flex items-center justify-between pt-1 border-t border-emerald-100/50">
-                            <span class="text-[9px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded">${langFlag}</span>
-                            <button class="speech-bot-btn text-[10px] text-emerald-800 font-bold hover:text-emerald-950 flex items-center gap-1 bg-white px-2 py-1 rounded-lg border border-emerald-200 shadow-xs">
-                                <i data-lucide="volume-2" class="w-3.5 h-3.5 text-amber-500"></i>
-                                <span>Écouter</span>
-                            </button>
-                        </div>
-                    `;
-                    div.querySelector('.speech-bot-btn').addEventListener('click', () => {
-                        const utt = new SpeechSynthesisUtterance(text);
-                        const voices = window.speechSynthesis.getVoices();
-                        if (lang === 'en') {
-                            utt.lang = 'en-US';
-                            const enVoice = voices.find(v => v.lang.startsWith('en'));
-                            if (enVoice) utt.voice = enVoice;
-                        } else if (lang === 'wo') {
-                            utt.lang = 'fr-SN';
-                            utt.rate = 0.92;
-                            utt.pitch = 1.05;
-                            const frVoice = voices.find(v => v.lang.startsWith('fr'));
-                            if (frVoice) utt.voice = frVoice;
-                        } else {
-                            utt.lang = 'fr-FR';
-                            const frVoice = voices.find(v => v.lang.startsWith('fr'));
-                            if (frVoice) utt.voice = frVoice;
-                        }
-                        window.speechSynthesis.speak(utt);
-                    });
-                }
-                chatContainer.appendChild(div);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-                if (window.lucide) lucide.createIcons();
-            }
-        }
-
-        function setupPresentation() {
-            const toggleBtn = document.getElementById('toggle-frame-btn');
-            const deviceFrame = document.getElementById('device-frame');
-            toggleBtn.addEventListener('click', () => {
-                deviceFrame.classList.toggle('fullscreen-mode');
-                toggleBtn.querySelector('span').textContent = deviceFrame.classList.contains('fullscreen-mode') ? 'Mode Téléphone' : 'Plein Écran';
-            });
-
-            // Fonction de téléchargement autonome du fichier
-            document.getElementById('btn-download-file').addEventListener('click', () => {
-                const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'sunu-agri-ia.html';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            });
-        }
-    </script>
+    <!-- Modules JavaScript SunuAgri IA -->
+    <script src="js/utils.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/vente.js"></script>
+    <script src="js/marches.js"></script>
+    <script src="js/sunumarche.js"></script>
+    <script src="js/conseiller.js"></script>
+    <script src="js/demo.js"></script>
+    <script src="js/account.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
