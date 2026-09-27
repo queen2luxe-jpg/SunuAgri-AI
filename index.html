@@ -39,6 +39,8 @@
                 <div class="header-controls">
                     <button id="account-toggle" class="header-account-btn" type="button" aria-label="Ouvrir mon compte" aria-expanded="false">
                         <i data-lucide="user-round" style="width:16px;height:16px;"></i><span>Mon compte</span>
+                        <span id="account-category-badge" class="account-category-badge" hidden></span>
+                        <span id="account-premium-badge" class="account-premium-badge" hidden>PREMIUM</span>
                     </button>
                     <button class="theme-btn" id="btn-theme" aria-label="Changer de thème">
                         <i data-lucide="moon" id="theme-icon" style="width:16px;height:16px;"></i>
@@ -70,7 +72,7 @@
                     <div class="stat"><div class="stat__num">3</div><div class="stat__lbl">Langues</div></div>
                 </div>
                 <div class="feature-grid">
-                    <div class="feat-card" role="button" tabindex="0" data-nav="tab-predict">
+                    <div class="feat-card" role="button" tabindex="0" data-nav="tab-predict" data-seller-only>
                         <div class="feat-icon">🤖</div>
                         <div class="feat-title">IA Vente</div>
                         <div class="feat-desc">Marché optimal et moment idéal</div>
@@ -83,7 +85,7 @@
                     <div class="feat-card" role="button" tabindex="0" data-nav="tab-marketplace">
                         <div class="feat-icon">🛒</div>
                         <div class="feat-title">SunuMarché</div>
-                        <div class="feat-desc">Vendre sans intermédiaire</div>
+                        <div class="feat-desc" id="marketplace-feature-desc">Vendre sans intermédiaire</div>
                     </div>
                     <div class="feat-card" role="button" tabindex="0" data-nav="tab-advisor">
                         <div class="feat-icon">💬</div>
@@ -94,7 +96,7 @@
             </section>
 
             <!-- TAB 1: IA VENTE -->
-            <section id="tab-predict" class="tab-pane" aria-label="IA Vente">
+            <section id="tab-predict" class="tab-pane" aria-label="IA Vente" data-seller-only>
                 <div class="section-pad">
                     <div class="card">
                         <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;">
@@ -177,6 +179,8 @@
                                 <div class="metric-sub" id="res-wait-days">Dans 14 jours</div>
                             </div>
                         </div>
+                        <div id="res-summary-trace"></div>
+                        <div id="weather-panel" class="weather-panel" aria-live="polite" hidden></div>
                     </div>
 
                     <!-- Détail -->
@@ -186,9 +190,12 @@
                             Détail de la Rentabilité
                         </div>
                         <div class="detail-row"><span class="detail-label">Prix estimé à terme</span><span class="detail-val" id="res-unit-price">21 700 FCFA / sac</span></div>
+                        <div id="res-price-trace"></div>
                         <div class="detail-row"><span class="detail-label">Revenu net total</span><span class="detail-val profit" id="res-net-revenue">975 000 FCFA</span></div>
+                        <div id="res-revenue-trace"></div>
                         <div class="detail-row"><span class="detail-label">Frais de transport</span><span class="detail-val cost" id="res-transport-cost">-42 000 FCFA</span></div>
                         <div class="detail-row"><span class="detail-label">Si vente locale aujourd'hui</span><span class="detail-val muted" id="res-baseline-price">705 750 FCFA</span></div>
+                        <div id="res-baseline-trace"></div>
 
                         <div class="tip-box">
                             <span aria-hidden="true" style="font-size:16px;flex-shrink:0;">💡</span>
@@ -252,7 +259,7 @@
                         <p class="chart-disclaimer">⚠️ Courbe prévisionnelle — vérifiez les cours avant de vendre.</p>
                     </div>
 
-                    <button id="btn-quick-publish" style="width:100%;padding:13px;background:var(--text-primary);color:var(--bg-frame);font-size:13px;font-weight:800;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s;">
+                    <button id="btn-quick-publish" data-seller-only style="width:100%;padding:13px;background:var(--text-primary);color:var(--bg-frame);font-size:13px;font-weight:800;border-radius:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s;">
                         <i data-lucide="tag" style="width:16px;height:16px;color:#fbbf24;"></i>
                         Mettre ce lot en vente sur SunuMarché
                     </button>
@@ -294,10 +301,10 @@
                     <div class="marketplace-hero">
                         <div>
                             <span class="mp-label">SunuMarché Express</span>
-                            <div class="mp-title">Vendez sans intermédiaire</div>
-                            <div class="mp-sub">Contact direct par WhatsApp en 1 clic</div>
+                            <div class="mp-title" id="marketplace-hero-title">Vendez sans intermédiaire</div>
+                            <div class="mp-sub" id="marketplace-hero-subtitle">Contact direct par WhatsApp en 1 clic</div>
                         </div>
-                        <button class="sell-btn" id="btn-open-modal">
+                        <button class="sell-btn" id="btn-open-modal" data-seller-only>
                             <i data-lucide="plus-circle" style="width:16px;height:16px;color:#059669;"></i>
                             Vendre
                         </button>
@@ -318,6 +325,26 @@
                         </div>
                     </div>
                     <div id="listings-container" style="display:flex;flex-direction:column;gap:10px;"></div>
+                </div>
+            </section>
+
+            <section id="tab-premium" class="tab-pane" aria-label="Espace Premium" data-premium-only hidden>
+                <div class="section-pad">
+                    <div class="card">
+                        <div class="section-title">🌟 Produits Premium</div>
+                        <p class="section-sub">Repères de prix locaux de démonstration, non garantis.</p>
+                        <div id="premium-products-list" class="premium-products-list"></div>
+                    </div>
+                    <div class="card premium-forum-card">
+                        <div class="section-title">💬 Communauté Premium</div>
+                        <p class="section-sub">Échangez des conseils avec les comptes Premium de cet appareil.</p>
+                        <div id="forum-messages" class="forum-messages" aria-live="polite"></div>
+                        <form id="forum-form" class="forum-form">
+                            <label class="form-label" for="forum-input">Votre message</label>
+                            <textarea id="forum-input" class="form-input" rows="3" maxlength="500" required placeholder="Partagez une question ou un conseil agricole…"></textarea>
+                            <button class="submit-btn" type="submit">Publier dans la communauté</button>
+                        </form>
+                    </div>
                 </div>
             </section>
 
@@ -372,7 +399,7 @@
             <button class="nav-item active" data-tab="tab-home" aria-label="Accueil">
                 <i data-lucide="home"></i><span>Accueil</span>
             </button>
-            <button class="nav-item" data-tab="tab-predict" aria-label="IA Vente">
+            <button class="nav-item" data-tab="tab-predict" aria-label="IA Vente" data-seller-only>
                 <i data-lucide="brain-circuit"></i><span>IA Vente</span>
             </button>
             <button class="nav-item" data-tab="tab-markets" aria-label="Marchés">
@@ -383,6 +410,9 @@
             </button>
             <button class="nav-item" data-tab="tab-advisor" aria-label="Conseiller">
                 <i data-lucide="message-circle"></i><span>Conseil</span>
+            </button>
+            <button class="nav-item" data-tab="tab-premium" aria-label="Espace Premium" data-premium-only hidden>
+                <i data-lucide="sparkles"></i><span>Premium</span>
             </button>
         </nav>
     </div>
@@ -424,15 +454,15 @@
             <div><h1>Mon compte</h1><p>Profil enregistré sur cet appareil</p></div>
             <button id="account-close" class="account-back-btn" type="button" aria-label="Retour à l’application"><i data-lucide="arrow-left" style="width:17px;height:17px;"></i><span>Retour</span></button>
         </header>
-        <div class="account-local-notice">Compte local uniquement : aucune synchronisation ni authentification serveur. Effacer les données du navigateur supprime le compte.</div>
+        <div class="account-local-notice">Démo locale uniquement : aucune base de données ni paiement. Les mots de passe sont stockés en clair dans ce navigateur. N’utilisez pas un vrai mot de passe.</div>
         <div id="account-auth-view" class="account-content">
             <div class="account-tabs" role="tablist" aria-label="Accès au compte">
                 <button type="button" class="account-tab active" data-account-view="login" role="tab" aria-selected="true">Connexion</button>
                 <button type="button" class="account-tab" data-account-view="signup" role="tab" aria-selected="false">Inscription</button>
             </div>
             <form id="account-login-form" class="account-form">
-                <label class="form-label" for="account-login-email">Adresse e-mail</label>
-                <input class="form-input" id="account-login-email" name="email" type="email" autocomplete="email" required>
+                <label class="form-label" for="account-login-phone">Téléphone</label>
+                <input class="form-input" id="account-login-phone" name="phone" type="tel" autocomplete="tel" required>
                 <label class="form-label" for="account-login-password">Mot de passe</label>
                 <input class="form-input" id="account-login-password" name="password" type="password" autocomplete="current-password" minlength="8" required>
                 <button class="submit-btn" type="submit">Se connecter</button>
@@ -440,12 +470,15 @@
             <form id="account-signup-form" class="account-form" hidden>
                 <label class="form-label" for="account-signup-name">Nom affiché</label>
                 <input class="form-input" id="account-signup-name" name="name" autocomplete="name" maxlength="80" required>
-                <label class="form-label" for="account-signup-email">Adresse e-mail</label>
-                <input class="form-input" id="account-signup-email" name="email" type="email" autocomplete="email" required>
-                <label class="form-label" for="account-signup-password">Mot de passe (8 caractères minimum)</label>
+                <label class="form-label" for="account-signup-phone">Téléphone</label>
+                <input class="form-input" id="account-signup-phone" name="phone" type="tel" autocomplete="tel" required>
+                <label class="form-label" for="account-signup-password">Mot de passe (démo locale)</label>
                 <input class="form-input" id="account-signup-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
-                <label class="form-label" for="account-signup-confirm">Confirmer le mot de passe</label>
-                <input class="form-input" id="account-signup-confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required>
+                <fieldset class="category-options">
+                    <legend class="form-label">Catégorie du compte</legend>
+                    <label><input type="radio" name="account-category" value="vendeur_standard" checked> Vendeur</label>
+                    <label><input type="radio" name="account-category" value="acheteur_standard"> Acheteur</label>
+                </fieldset>
                 <button class="submit-btn" type="submit">Créer mon compte local</button>
             </form>
         </div>
@@ -454,16 +487,42 @@
             <form id="account-profile-form" class="account-form">
                 <label class="form-label" for="account-profile-name">Nom affiché</label>
                 <input class="form-input" id="account-profile-name" name="name" maxlength="80" required>
-                <label class="form-label" for="account-profile-email">Adresse e-mail</label>
-                <input class="form-input" id="account-profile-email" name="email" type="email" readonly>
+                <label class="form-label" for="account-profile-phone">Téléphone</label>
+                <input class="form-input" id="account-profile-phone" name="phone" type="tel" required>
+                <p class="account-category-line">Catégorie : <strong id="account-profile-category"></strong></p>
                 <button class="submit-btn" type="submit">Enregistrer le profil</button>
             </form>
+            <section id="account-upgrade-section" class="account-upgrade-section" hidden>
+                <h2>Débloquez le Premium — 2000 FCFA/mois</h2>
+                <p id="account-upgrade-description"></p>
+                <button id="account-subscribe" class="premium-subscribe-btn" type="button">S'abonner maintenant</button>
+                <small>Simulation de paiement — aucune transaction réelle.</small>
+            </section>
+            <p id="account-premium-status" class="premium-status" hidden></p>
             <div class="account-actions">
                 <button id="account-logout" class="account-secondary-btn" type="button">Se déconnecter</button>
                 <button id="account-delete" class="account-delete-btn" type="button">Supprimer ce compte local</button>
             </div>
         </div>
         <p id="account-message" class="account-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="premium-payment-modal" class="modal-overlay payment-demo-overlay" role="dialog" aria-modal="true" aria-labelledby="premium-payment-title" aria-hidden="true">
+        <div class="modal-sheet">
+            <div class="modal-header">
+                <h2 class="modal-title" id="premium-payment-title">Paiement Mobile Money (démo)</h2>
+                <button class="modal-close" id="premium-payment-close" type="button" aria-label="Fermer">
+                    <i data-lucide="x" style="width:16px;height:16px;"></i>
+                </button>
+            </div>
+            <form id="premium-payment-form" class="payment-demo-form">
+                <label class="form-label" for="premium-payment-phone">Numéro de téléphone Mobile Money</label>
+                <input class="form-input" id="premium-payment-phone" name="mobile-money-phone" type="tel" autocomplete="tel" required>
+                <small>Simulation de paiement — aucune transaction réelle.</small>
+                <p id="premium-payment-message" class="payment-demo-message" role="status" aria-live="polite"></p>
+                <button class="submit-btn" type="submit">Confirmer le paiement (démo)</button>
+            </form>
+        </div>
     </section>
 
     <!-- Modal Vendre -->

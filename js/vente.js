@@ -122,7 +122,10 @@ function optimizeSale(productId, qty, region) {
 // UI — MISE À JOUR DES RÉSULTATS
 // ================================================================
 
+let weatherRequestSequence = 0;
+
 function runPrediction() {
+    if (window.canUseSalesTools && !window.canUseSalesTools()) return;
     const pEl = document.getElementById('input-product');
     let pid = (pEl && pEl.value) || 'oignon';
     if (!AGRI_DATA.products.some(p => p.id === pid)) pid = 'oignon';
@@ -141,6 +144,7 @@ function runPrediction() {
             updateResultUI();
             renderMarketCompare();
             renderForecastChart(AppState.lastResult.curve, AppState.lastResult.bestDay);
+            updateWeather(reg);
         }
         if (btn) {
             btn.disabled = false;
@@ -166,6 +170,11 @@ function updateResultUI() {
     document.getElementById('res-transport-cost').textContent = `-${r.tCost.toLocaleString('fr-FR')} FCFA (${r.dist} km)`;
     document.getElementById('res-baseline-price').textContent = `${r.baseline.toLocaleString('fr-FR')} FCFA`;
     document.getElementById('res-storage-tip').textContent = r.storageTips[L];
+    document.getElementById('res-summary-trace').innerHTML = getDataTraceabilityHtml(r.bestMarket.meta);
+    document.getElementById('res-price-trace').innerHTML = getDataTraceabilityHtml(r.bestMarket.meta);
+    document.getElementById('res-revenue-trace').innerHTML = getDataTraceabilityHtml(r.bestMarket.meta);
+    const localMarket = r.allMarkets.reduce((closest, item) => item.dist < closest.dist ? item : closest, r.allMarkets[0]);
+    document.getElementById('res-baseline-trace').innerHTML = getDataTraceabilityHtml(localMarket.market.meta);
 
     const distEl = document.getElementById('calc-dist');
     const tonnEl = document.getElementById('calc-tonnage');
@@ -178,6 +187,28 @@ function updateResultUI() {
     document.getElementById('voice-preview').textContent = `"${r.speechTexts[L].slice(0, 68)}..."`;
 }
 
+async function updateWeather(regionId) {
+    const panel = document.getElementById('weather-panel');
+    const region = AGRI_DATA.regions.find(item => item.id === regionId);
+    if (!panel || !region) return;
+
+    const requestSequence = ++weatherRequestSequence;
+    panel.hidden = false;
+    panel.textContent = 'Chargement météo…';
+
+    try {
+        const weather = await fetchWeather(region.lat, region.lon);
+        if (requestSequence !== weatherRequestSequence) return;
+        const regionName = region.name.split(' (')[0];
+        const temperature = weather.temperature.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+        const precipitation = weather.precipitation.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+        panel.innerHTML = `<span class="weather-live-badge live-badge"><span class="live-dot" aria-hidden="true"></span><span>En direct</span></span><span>🌦️ Conditions actuelles à ${regionName} : ${temperature}°C, ${precipitation}mm — mis à jour à l'instant (source : Open-Meteo, donnée en direct)</span>`;
+    } catch (error) {
+        if (requestSequence !== weatherRequestSequence) return;
+        panel.innerHTML = '<span class="weather-unavailable">Météo indisponible</span>';
+    }
+}
+
 function renderMarketCompare() {
     if (!AppState.lastResult) return;
     const c = document.getElementById('market-compare-list');
@@ -185,7 +216,7 @@ function renderMarketCompare() {
     AppState.lastResult.allMarkets.slice(0, 6).forEach((item, i) => {
         const d = document.createElement('div');
         d.className = `compare-item${i === 0 ? ' best' : ''}`;
-        d.innerHTML = `<div><div class="compare-name">${i === 0 ? '🥇 ' : ''}${item.market.name}</div><div class="compare-dist">${item.dist} km · ${item.market.type}</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="compare-price">${item.bestNet.toLocaleString('fr-FR')} FCFA</div>${i === 0 ? '<span class="compare-badge">Optimal</span>' : ''}</div>`;
+        d.innerHTML = `<div><div class="compare-name">${i === 0 ? '🥇 ' : ''}${item.market.name}</div><div class="compare-dist">${item.dist} km · ${item.market.type}</div></div><div style="display:flex;align-items:center;gap:6px;"><div class="compare-price">${item.bestNet.toLocaleString('fr-FR')} FCFA</div>${i === 0 ? '<span class="compare-badge">Optimal</span>' : ''}</div>${getDataTraceabilityHtml(item.market.meta)}`;
         c.appendChild(d);
     });
 }
@@ -256,6 +287,7 @@ function setupPrediction() {
 
     // Pré-remplissage depuis les résultats IA vers SunuMarché
     document.getElementById('btn-quick-publish').addEventListener('click', () => {
+        if (window.canSell && !window.canSell()) return;
         if (AppState.lastResult) {
             document.getElementById('seller-product').value = AppState.lastResult.product.id;
             document.getElementById('seller-qty').value = `${AppState.lastResult.qty} ${AppState.lastResult.product.unit.split(' ')[0]}s`;
@@ -274,6 +306,7 @@ if (typeof window !== 'undefined') {
     window.genCurve = genCurve;
     window.optimizeSale = optimizeSale;
     window.runPrediction = runPrediction;
+    window.updateWeather = updateWeather;
     window.updateResultUI = updateResultUI;
     window.renderMarketCompare = renderMarketCompare;
     window.renderForecastChart = renderForecastChart;
@@ -282,5 +315,5 @@ if (typeof window !== 'undefined') {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { calcTransport, genCurve, optimizeSale, runPrediction, updateResultUI, renderMarketCompare, renderForecastChart, toggleSpeech, setupPrediction };
+    module.exports = { calcTransport, genCurve, optimizeSale, runPrediction, updateResultUI, updateWeather, renderMarketCompare, renderForecastChart, toggleSpeech, setupPrediction };
 }

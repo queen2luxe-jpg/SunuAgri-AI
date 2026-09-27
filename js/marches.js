@@ -79,7 +79,7 @@ function renderMarketList() {
         const hot = m.demandBonus >= 1.18;
         const card = document.createElement('div');
         card.className = 'market-card';
-        card.innerHTML = `<div class="market-info"><div class="market-name">${m.name}</div><div class="market-meta">${m.city} · ${m.type}</div><div class="market-tags">${m.tags.map(t => `<span class="market-tag">${t}</span>`).join('')}</div></div><div class="market-price-col"><div class="market-unit">${prod.unit}</div><div class="market-price">${m.currentPrice.toLocaleString('fr-FR')} FCFA</div><span class="trend-badge ${hot ? 'up' : 'stable'}">${hot ? '↑ Très Recherché' : '→ Stable'}</span></div>`;
+        card.innerHTML = `<div class="market-info"><div class="market-name">${m.name}</div><div class="market-meta">${m.city} · ${m.type}</div><div class="market-tags">${m.tags.map(t => `<span class="market-tag">${t}</span>`).join('')}</div></div><div class="market-price-col"><div class="market-unit">${prod.unit}</div><div class="market-price">${m.currentPrice.toLocaleString('fr-FR')} FCFA</div><span class="trend-badge ${hot ? 'up' : 'stable'}">${hot ? '↑ Très Recherché' : '→ Stable'}</span>${getDataTraceabilityHtml(m.meta)}</div>`;
         c.appendChild(card);
     });
 }

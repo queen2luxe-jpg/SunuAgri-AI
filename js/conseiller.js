@@ -79,7 +79,7 @@ function setupChat() {
         try {
             let answer;
             if (assistantMode === 'gemini') {
-                answer = await answerWithGemini();
+                answer = await answerWithGemini(message);
             } else {
                 answer = await answerInDemoMode(message);
             }
@@ -95,7 +95,7 @@ function setupChat() {
         }
     }
 
-    async function answerWithGemini() {
+    async function answerWithGemini(userMessage) {
         let response = await requestAssistant();
         let actionCount = 0;
         let lastActionResult = null;
@@ -109,7 +109,14 @@ function setupChat() {
             response = await requestAssistant();
         }
         if (response.action) return `J’ai effectué l’action autorisée. ${formatActionResult(lastActionResult)} Pour continuer, précisez votre prochaine étape.`;
-        return response.text || (lastActionResult ? formatActionResult(lastActionResult) : 'Je n’ai pas reçu de réponse exploitable. Pouvez-vous reformuler ?');
+        const answer = response.text || (lastActionResult ? formatActionResult(lastActionResult) : 'Je n’ai pas reçu de réponse exploitable. Pouvez-vous reformuler ?');
+        const discussesMarketData = /\b(simulation|simuler|marché|marchés|prix|cours)\b/i.test(`${userMessage} ${response.text || ''}`);
+        const hasTraceableAction = lastActionResult && ['simulation', 'simulation_explanation', 'market_search'].includes(lastActionResult.action);
+        if (!response.text || (!hasTraceableAction && !discussesMarketData)) return answer;
+        const trace = hasTraceableAction
+            ? getActionTraceability(lastActionResult)
+            : formatDataTraceability(AppState.lastResult && AppState.lastResult.bestMarket.meta || AGRI_DATA.markets[0].meta);
+        return `${answer}\n\n${trace}`;
     }
 
     async function requestAssistant() {
@@ -168,7 +175,9 @@ function setupChat() {
             return `Mode démonstration locale (sans modèle IA connecté). ${formatActionResult(result)}`;
         }
         const local = getResponse(message);
-        return `Mode démonstration locale (sans modèle IA connecté). ${local.text} Ces réponses proviennent d’une base locale et ne sont pas des données en direct.`;
+        const isMarketAnswer = /\b(marché|marchés|prix|cours)\b/i.test(message);
+        const trace = isMarketAnswer ? ` ${formatDataTraceability(AGRI_DATA.markets[0].meta)}` : '';
+        return `Mode démonstration locale (sans modèle IA connecté). ${local.text} Ces réponses proviennent d’une base locale et ne sont pas des données en direct.${trace}`;
     }
 }
 
@@ -219,6 +228,7 @@ function getAssistantContext() {
             quantity: result.qty,
             region: regionInput && regionInput.value || null,
             market: result.bestMarket.name,
+            meta: result.bestMarket.meta,
             days: result.bestDay,
             netRevenueFcfa: result.optimalNet,
             localBaselineFcfa: result.baseline,
@@ -229,7 +239,8 @@ function getAssistantContext() {
                 market: item.market.name,
                 netRevenueFcfa: item.bestNet,
                 transportFcfa: item.tCost,
-                distanceKm: item.dist
+                distanceKm: item.dist,
+                meta: item.market.meta
             }))
         } : null
     };
@@ -243,6 +254,7 @@ async function executeAssistantAction(action) {
         return { action: 'navigation', section: args.section };
     }
     if (action.name === 'run_sale_simulation') {
+        if (window.canUseSalesTools && !window.canUseSalesTools()) throw new Error('La simulation IA Vente est réservée aux comptes vendeur.');
         if (!AGRI_DATA.products.some(product => product.id === args.product) || !AGRI_DATA.regions.some(region => region.id === args.region) || !Number.isInteger(args.quantity) || args.quantity < 1 || args.quantity > 2000) {
             throw new Error('Paramètres de simulation invalides.');
         }
@@ -265,9 +277,10 @@ async function executeAssistantAction(action) {
         const product = AGRI_DATA.products.find(item => item.id === AppState.activeFilter);
         const query = (search && search.value || '').toLowerCase();
         const matches = AGRI_DATA.markets.filter(market => !query || `${market.name} ${market.city} ${market.type}`.toLowerCase().includes(query));
-        return { action: 'market_search', product: product && product.name, estimatedPrices: matches.slice(0, 6).map(market => ({ market: market.name, city: market.city, estimateFcfa: Math.round(product.basePrice * market.demandBonus), type: market.type })), simulated: true };
+        return { action: 'market_search', product: product && product.name, meta: product && product.meta, estimatedPrices: matches.slice(0, 6).map(market => ({ market: market.name, city: market.city, estimateFcfa: Math.round(product.basePrice * market.demandBonus), type: market.type, meta: market.meta })), simulated: true };
     }
     if (action.name === 'prepare_listing') {
+        if (window.canSell && !window.canSell()) throw new Error('La publication d’annonces est réservée aux comptes vendeur.');
         if (!AGRI_DATA.products.some(product => product.id === args.product) || typeof args.quantity !== 'string' || !args.quantity.trim() || args.quantity.length > 80) {
             throw new Error('Informations de lot invalides.');
         }
@@ -289,14 +302,20 @@ async function executeAssistantAction(action) {
 function formatActionResult(result) {
     if (!result) return 'Aucun résultat disponible.';
     if (result.action === 'navigation') return `J’ai ouvert la section ${result.section}.`;
-    if (result.action === 'simulation') return `Simulation terminée avec les données estimatives de l’application : ${result.quantity} ${result.unit || 'unités'} de ${result.productName || result.product}, meilleur résultat ${result.market}, revenu net estimé ${Number(result.netRevenueFcfa).toLocaleString('fr-FR')} FCFA, transport estimé ${Number(result.transportFcfa).toLocaleString('fr-FR')} FCFA, délai ${result.days} jours.`;
-    if (result.action === 'market_search') return `Observatoire ouvert pour ${result.product || 'la culture sélectionnée'}. ${result.estimatedPrices.length} marché(s) affiché(s); les prix sont simulés, pas des cours en direct.`;
+    if (result.action === 'simulation') return `Simulation terminée avec les données estimatives de l’application : ${result.quantity} ${result.unit || 'unités'} de ${result.productName || result.product}, meilleur résultat ${result.market}, revenu net estimé ${Number(result.netRevenueFcfa).toLocaleString('fr-FR')} FCFA, transport estimé ${Number(result.transportFcfa).toLocaleString('fr-FR')} FCFA, délai ${result.days} jours. ${getActionTraceability(result)}`;
+    if (result.action === 'market_search') return `Observatoire ouvert pour ${result.product || 'la culture sélectionnée'}. ${result.estimatedPrices.length} marché(s) affiché(s); les prix sont simulés, pas des cours en direct. ${getActionTraceability(result)}`;
     if (result.action === 'listing_prepared') return 'Le formulaire SunuMarché est prérempli. Je n’ai rien publié. Vérifiez le lot, complétez votre nom et votre numéro dans le formulaire puis confirmez vous-même la publication.';
     if (result.action === 'simulation_explanation') {
         if (!result.available) return 'Aucune simulation n’est encore disponible. Lancez-en une dans IA Vente et je pourrai expliquer ses résultats.';
-        return `Résultat estimé : ${result.market}, ${Number(result.netRevenueFcfa).toLocaleString('fr-FR')} FCFA nets après environ ${Number(result.transportFcfa).toLocaleString('fr-FR')} FCFA de transport sur ${result.distanceKm} km. Le surplus estimé par rapport à la référence locale est ${Number(result.extraFcfa).toLocaleString('fr-FR')} FCFA. Ce sont des estimations, pas une garantie de prix.`;
+        return `Résultat estimé : ${result.market}, ${Number(result.netRevenueFcfa).toLocaleString('fr-FR')} FCFA nets après environ ${Number(result.transportFcfa).toLocaleString('fr-FR')} FCFA de transport sur ${result.distanceKm} km. Le surplus estimé par rapport à la référence locale est ${Number(result.extraFcfa).toLocaleString('fr-FR')} FCFA. Ce sont des estimations, pas une garantie de prix. ${getActionTraceability(result)}`;
     }
     return 'Action effectuée.';
+}
+
+function getActionTraceability(result) {
+    const firstEstimate = result.estimatedPrices && result.estimatedPrices[0];
+    const meta = firstEstimate && firstEstimate.meta || result.meta;
+    return formatDataTraceability(meta);
 }
 
 function inferDemoAction(message) {

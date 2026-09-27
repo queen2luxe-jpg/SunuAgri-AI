@@ -58,6 +58,9 @@ a { text-decoration: none; }
 .theme-btn:hover { background: rgba(255,255,255,.25); }
 .header-account-btn { min-height: 32px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(255,255,255,.3); border-radius: 9px; color: #fff; background: rgba(255,255,255,.14); font-size: 11px; font-weight: 700; }
 .header-account-btn:hover { background: rgba(255,255,255,.25); }
+.account-category-badge { padding: 3px 6px; border-radius: 999px; background: rgba(255,255,255,.16); font-size: 9px; white-space: nowrap; }
+.account-premium-badge { padding: 3px 6px; border-radius: 999px; background: #facc15; color: #422006; font-size: 9px; font-weight: 900; }
+.account-category-badge[hidden], .account-premium-badge[hidden] { display: none; }
 .install-btn { min-height: 32px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid rgba(255,255,255,.3); border-radius: 9px; color: #fff; background: rgba(255,255,255,.14); font-size: 11px; font-weight: 700; }
 .install-btn:hover { background: rgba(255,255,255,.25); }
 .install-btn[hidden] { display: none !important; }
@@ -103,6 +106,7 @@ a { text-decoration: none; }
 
 /* ---- Tabs ---- */
 .tab-pane { display: none; }
+.tab-pane[hidden], [data-seller-only][hidden], [data-premium-only][hidden] { display: none !important; }
 .tab-pane.active { display: block; animation: fadeUp .22s ease; max-width: 1500px; margin: 0 auto; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -257,6 +261,20 @@ a { text-decoration: none; }
 .detail-val.profit { color: var(--primary); }
 .detail-val.cost { color: var(--danger); }
 .detail-val.muted { color: var(--text-muted); }
+.data-trace { display: block; margin-top: 3px; color: var(--text-muted); font-size: 9px; line-height: 1.45; }
+.freshness-badge { font-weight: 700; white-space: nowrap; }
+.freshness-badge--fresh { color: #15803d; }
+.freshness-badge--check { color: #c2410c; }
+.freshness-badge--old { color: #b91c1c; }
+.result-card .data-trace { color: rgba(255,255,255,.72); }
+.result-card .freshness-badge--fresh { color: #86efac; }
+.result-card .freshness-badge--check { color: #fdba74; }
+.result-card .freshness-badge--old { color: #fca5a5; }
+.weather-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 8px; margin-top: 10px; padding: 8px 10px; border: 1px solid rgba(255,255,255,.14); border-radius: 10px; background: rgba(0,0,0,.16); color: #ecfdf5; font-size: 10px; line-height: 1.5; }
+.weather-panel[hidden] { display: none; }
+.weather-live-badge { flex: 0 0 auto; color: #a7f3d0; }
+.weather-panel .live-dot { width: 8px; height: 8px; }
+.weather-unavailable { color: rgba(255,255,255,.68); font-size: 10px; }
 .tip-box {
     background: var(--bg-card-alt); border: 1px solid var(--border); border-radius: 12px;
     padding: 10px 12px; display: flex; gap: 8px; align-items: flex-start;
@@ -285,10 +303,11 @@ a { text-decoration: none; }
 
 /* Comparaison marchés */
 .compare-item {
-    display: flex; align-items: center; justify-content: space-between;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 8px;
     background: var(--bg-card-alt); border: 1px solid var(--border-card);
     border-radius: 12px; padding: 8px 10px; font-size: 11px; margin-bottom: 6px;
 }
+.compare-item .data-trace { grid-column: 1 / -1; }
 .compare-item.best { border-color: var(--primary); background: var(--primary-xlight); }
 .compare-name { font-weight: 700; color: var(--text-primary); }
 .compare-dist { font-size: 10px; color: var(--text-muted); }
@@ -319,9 +338,10 @@ a { text-decoration: none; }
 .market-meta { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 .market-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
 .market-tag { font-size: 9px; font-weight: 600; background: var(--bg-input); color: var(--text-secondary); padding: 2px 6px; border-radius: 6px; }
-.market-price-col { text-align: right; flex-shrink: 0; padding-left: 10px; border-left: 1px solid var(--border-card); }
+.market-price-col { text-align: right; flex: 0 1 190px; min-width: 0; padding-left: 10px; border-left: 1px solid var(--border-card); }
 .market-price { font-size: 14px; font-weight: 900; color: var(--text-primary); }
 .market-unit { font-size: 9px; color: var(--text-muted); margin-bottom: 4px; }
+.market-price-col .data-trace { max-width: 190px; margin-left: auto; }
 .trend-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
 .trend-badge.up { background: #d1fae5; color: #065f46; }
 .trend-badge.stable { background: var(--bg-input); color: var(--text-secondary); }
@@ -469,6 +489,34 @@ a { text-decoration: none; }
 .account-actions { display: grid; gap: 8px; margin-top: 12px; }
 .account-secondary-btn, .account-delete-btn { min-height: 36px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); background: var(--bg-card); font-size: 11px; font-weight: 700; }
 .account-delete-btn { color: var(--danger); }
+.category-options { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 4px 0; padding: 10px; border: 1px solid var(--border); border-radius: 9px; }
+.category-options legend { padding: 0 4px; }
+.category-options label { display: flex; align-items: center; gap: 7px; min-height: 36px; padding: 7px; border-radius: 7px; background: var(--bg-card-alt); color: var(--text-secondary); font-size: 10px; font-weight: 700; }
+.category-options input { accent-color: var(--primary); }
+.account-category-line { margin-top: 8px; color: var(--text-muted); font-size: 11px; }
+.account-upgrade-section { margin-top: 14px; padding: 14px; border: 1px solid var(--border); border-radius: 9px; background: var(--bg-card-alt); }
+.account-upgrade-section[hidden] { display: none !important; }
+.account-upgrade-section h2 { color: var(--text-primary); font-size: 13px; font-weight: 800; }
+.account-upgrade-section p { margin-top: 5px; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
+.account-upgrade-section small, .payment-demo-form small { display: block; margin-top: 6px; color: var(--text-muted); font-size: 9px; line-height: 1.5; }
+.premium-subscribe-btn { width: 100%; min-height: 40px; margin-top: 10px; border-radius: 8px; background: #facc15; color: #422006; font-size: 12px; font-weight: 800; }
+.premium-subscribe-btn[hidden], .premium-status[hidden] { display: none; }
+.premium-status { margin-top: 10px; color: var(--primary-dark); font-size: 10px; line-height: 1.5; }
+.payment-demo-overlay { z-index: 500; align-items: center; }
+.payment-demo-form { display: grid; gap: 8px; }
+.payment-demo-form .form-label { margin-bottom: -4px; }
+.payment-demo-message { min-height: 16px; color: var(--danger); font-size: 10px; }
+.premium-products-list { display: grid; gap: 8px; margin-top: 12px; }
+.premium-product-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px; border-bottom: 1px solid var(--border-card); font-size: 11px; }
+.premium-product-row strong { color: var(--text-primary); }
+.premium-product-row span { color: var(--primary-dark); font-weight: 700; text-align: right; }
+.premium-forum-card { display: flex; flex-direction: column; gap: 8px; }
+.forum-messages { display: grid; gap: 8px; max-height: 320px; overflow-y: auto; }
+.forum-message { padding: 10px; border: 1px solid var(--border-card); border-radius: 8px; background: var(--bg-card-alt); }
+.forum-message__meta { margin-bottom: 4px; color: var(--primary-dark); font-size: 10px; font-weight: 800; }
+.forum-message p, .forum-empty { color: var(--text-secondary); font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.forum-form { display: grid; gap: 7px; }
+.forum-form textarea { resize: vertical; }
 .account-message { width: min(560px, calc(100% - 32px)); min-height: 18px; padding: 10px 2px 16px; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
 .account-message.is-error { color: var(--danger); }
 

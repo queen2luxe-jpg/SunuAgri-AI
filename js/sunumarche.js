@@ -11,7 +11,10 @@ function setupMarketplace() {
     const closeBtn = document.getElementById('close-modal');
 
     if (openBtn && modal) {
-        openBtn.addEventListener('click', () => modal.classList.add('open'));
+        openBtn.addEventListener('click', () => {
+            if (window.canSell && !window.canSell()) return;
+            modal.classList.add('open');
+        });
     }
     if (closeBtn && modal) {
         closeBtn.addEventListener('click', () => modal.classList.remove('open'));
@@ -41,6 +44,7 @@ function setupMarketplace() {
     if (form) {
         form.addEventListener('submit', e => {
             e.preventDefault();
+            if (window.canSell && !window.canSell()) return;
             const err = document.getElementById('form-error');
             if (err) err.style.display = 'none';
 
@@ -112,7 +116,10 @@ function renderListings() {
     }
 
     if (!filtered.length) {
-        c.innerHTML = '<div class="empty-state"><div class="empty-icon">🌾</div><div class="empty-text">Aucune annonce trouvée</div><div class="empty-sub">Soyez le premier à publier votre récolte !</div></div>';
+        const emptyHint = window.canSell && !window.canSell()
+            ? 'Essayez un autre filtre ou une autre localité.'
+            : 'Soyez le premier à publier votre récolte !';
+        c.innerHTML = `<div class="empty-state"><div class="empty-icon">🌾</div><div class="empty-text">Aucune annonce trouvée</div><div class="empty-sub">${emptyHint}</div></div>`;
         return;
     }
 

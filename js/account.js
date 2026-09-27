@@ -1,6 +1,36 @@
-const ACCOUNT_STORAGE_KEY = 'sunuagri-local-accounts-v1';
-const ACCOUNT_SESSION_KEY = 'sunuagri-local-session-v1';
-const PASSWORD_ITERATIONS = 210_000;
+const ACCOUNT_STORAGE_KEY = 'sunuagri_users';
+const ACCOUNT_SESSION_KEY = 'sunuagri_current_user';
+const FORUM_STORAGE_KEY = 'sunuagri_forum';
+const ACCOUNT_CATEGORIES = ['vendeur_standard', 'vendeur_premium', 'acheteur_standard', 'acheteur_premium'];
+const STANDARD_CATEGORIES = ['vendeur_standard', 'acheteur_standard'];
+const CATEGORY_LABELS = {
+    vendeur_standard: 'Vendeur standard',
+    vendeur_premium: 'Vendeur premium',
+    acheteur_standard: 'Acheteur standard',
+    acheteur_premium: 'Acheteur premium'
+};
+
+function readLocalUsers() {
+    try {
+        const users = JSON.parse(localStorage.getItem(ACCOUNT_STORAGE_KEY) || '[]');
+        return Array.isArray(users) ? users.filter(user => user && typeof user.phone === 'string' && ACCOUNT_CATEGORIES.includes(user.category)) : [];
+    } catch {
+        return [];
+    }
+}
+
+function getCurrentAccount() {
+    const phone = localStorage.getItem(ACCOUNT_SESSION_KEY);
+    return phone && readLocalUsers().find(user => user.phone === phone) || null;
+}
+
+function isPremiumAccount(user = getCurrentAccount()) {
+    return Boolean(user && user.category.endsWith('_premium') && user.premiumSince);
+}
+
+function canSell(user = getCurrentAccount()) {
+    return !user || user.category.startsWith('vendeur_');
+}
 
 function setupAccount() {
     const panel = document.getElementById('account-panel');
@@ -11,27 +41,12 @@ function setupAccount() {
     const loginForm = document.getElementById('account-login-form');
     const signupForm = document.getElementById('account-signup-form');
     const profileForm = document.getElementById('account-profile-form');
+    const paymentModal = document.getElementById('premium-payment-modal');
+    const paymentForm = document.getElementById('premium-payment-form');
     const message = document.getElementById('account-message');
-    if (!panel || !toggle || !loginForm || !signupForm || !profileForm) return;
+    if (!panel || !toggle || !loginForm || !signupForm || !profileForm || !paymentModal || !paymentForm) return;
 
-    const readAccounts = () => {
-        try {
-            const value = JSON.parse(localStorage.getItem(ACCOUNT_STORAGE_KEY) || '[]');
-            return Array.isArray(value) ? value.filter(account => account && typeof account.email === 'string' && typeof account.passwordHash === 'string') : [];
-        } catch {
-            return [];
-        }
-    };
-    const writeAccounts = accounts => localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify(accounts));
-    const encode = bytes => btoa(Array.from(new Uint8Array(bytes), byte => String.fromCharCode(byte)).join(''));
-    const decode = value => Uint8Array.from(atob(value), char => char.charCodeAt(0));
-
-    async function hashPassword(password, salt) {
-        if (!window.crypto || !window.crypto.subtle) throw new Error('La création de compte nécessite HTTPS ou localhost.');
-        const key = await window.crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
-        const bits = await window.crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: PASSWORD_ITERATIONS, hash: 'SHA-256' }, key, 256);
-        return encode(bits);
-    }
+    const writeUsers = users => localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify(users));
 
     function showMessage(text, isError = false) {
         message.textContent = text;
@@ -49,6 +64,48 @@ function setupAccount() {
         });
     }
 
+    function renderPremiumProducts() {
+        const container = document.getElementById('premium-products-list');
+        if (!container || !window.AGRI_DATA) return;
+        container.innerHTML = '';
+        AGRI_DATA.products.slice(0, 4).forEach(product => {
+            const item = document.createElement('div');
+            item.className = 'premium-product-row';
+            const name = document.createElement('strong');
+            name.textContent = `${product.emoji} ${product.name}`;
+            const price = document.createElement('span');
+            price.textContent = `${product.basePrice.toLocaleString('fr-FR')} FCFA / ${product.unit}`;
+            item.appendChild(name);
+            item.appendChild(price);
+            container.appendChild(item);
+        });
+    }
+
+    function renderForum() {
+        const list = document.getElementById('forum-messages');
+        if (!list) return;
+        let messages = [];
+        try {
+            const saved = JSON.parse(localStorage.getItem(FORUM_STORAGE_KEY) || '[]');
+            if (Array.isArray(saved)) messages = saved;
+        } catch { /* Ignore invalid local demo data. */ }
+        list.innerHTML = '';
+        messages.slice(-50).forEach(entry => {
+            const item = document.createElement('article');
+            item.className = 'forum-message';
+            const heading = document.createElement('div');
+            heading.className = 'forum-message__meta';
+            const timestamp = new Date(entry.time);
+            heading.textContent = `${entry.name} · ${Number.isNaN(timestamp.getTime()) ? '' : timestamp.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
+            const text = document.createElement('p');
+            text.textContent = entry.text;
+            item.appendChild(heading);
+            item.appendChild(text);
+            list.appendChild(item);
+        });
+        if (!messages.length) list.innerHTML = '<p class="forum-empty">Aucun message pour le moment.</p>';
+    }
+
     function setOpen(open) {
         panel.hidden = !open;
         panel.setAttribute('aria-hidden', String(!open));
@@ -64,90 +121,181 @@ function setupAccount() {
     }
 
     function renderAccount() {
-        const email = localStorage.getItem(ACCOUNT_SESSION_KEY);
-        const account = email && readAccounts().find(item => item.email === email);
+        const account = getCurrentAccount();
         const signedIn = Boolean(account);
         authView.hidden = signedIn;
         profileView.hidden = !signedIn;
+        const categoryBadge = document.getElementById('account-category-badge');
+        const premiumBadge = document.getElementById('account-premium-badge');
+        categoryBadge.hidden = !signedIn;
+        premiumBadge.hidden = !isPremiumAccount(account);
         if (signedIn) {
+            categoryBadge.textContent = account.category.startsWith('vendeur_') ? 'Vendeur' : 'Acheteur';
             document.getElementById('account-profile-name').value = account.name;
-            document.getElementById('account-profile-email').value = account.email;
-            showMessage('Profil local chargé.');
+            document.getElementById('account-profile-phone').value = account.phone;
+            document.getElementById('account-profile-category').textContent = CATEGORY_LABELS[account.category];
+            const subscribeButton = document.getElementById('account-subscribe');
+            const premiumStatus = document.getElementById('account-premium-status');
+            const upgradeSection = document.getElementById('account-upgrade-section');
+            const isStandard = account.category.endsWith('_standard');
+            upgradeSection.hidden = !isStandard;
+            document.getElementById('account-upgrade-description').textContent = account.category.startsWith('vendeur_')
+                ? 'Vendez vos produits premium et rejoignez la communauté vendeurs.'
+                : 'Accédez aux produits premium des vendeurs premium.';
+            premiumStatus.hidden = !account.premiumSince;
+            premiumStatus.textContent = account.premiumSince
+                ? `Abonnement démo actif depuis le ${new Date(account.premiumSince).toLocaleDateString('fr-FR')}. Aucun paiement effectué.`
+                : '';
+            showMessage('Profil local chargé sur cet appareil.');
         } else {
             localStorage.removeItem(ACCOUNT_SESSION_KEY);
+            categoryBadge.textContent = '';
+            premiumBadge.hidden = true;
             selectAccountView('login');
-            showMessage('Créez un profil sur cet appareil ou connectez-vous.');
+            showMessage('Créez un compte local sur cet appareil ou connectez-vous.');
         }
+        if (window.applyAccountAccess) window.applyAccountAccess(account);
+        renderPremiumProducts();
+        renderForum();
     }
 
     toggle.addEventListener('click', () => setOpen(panel.hidden));
     close.addEventListener('click', () => setOpen(false));
     window.closeAccountPanel = () => setOpen(false);
-    document.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && !panel.hidden) setOpen(false);
-    });
-
     document.querySelectorAll('[data-account-view]').forEach(button => {
         button.addEventListener('click', () => {
-            const signup = button.dataset.accountView === 'signup';
             selectAccountView(button.dataset.accountView);
-            showMessage(signup ? 'Le profil et la connexion restent sur cet appareil.' : 'Connectez-vous avec un profil enregistré sur cet appareil.');
+            showMessage(button.dataset.accountView === 'signup' ? 'Compte de démonstration enregistré uniquement dans ce navigateur.' : 'Connectez-vous avec votre numéro enregistré sur cet appareil.');
         });
     });
 
-    signupForm.addEventListener('submit', async event => {
+    signupForm.addEventListener('submit', event => {
         event.preventDefault();
         const name = document.getElementById('account-signup-name').value.trim();
-        const email = document.getElementById('account-signup-email').value.trim().toLowerCase();
+        const phone = document.getElementById('account-signup-phone').value.trim();
         const password = document.getElementById('account-signup-password').value;
-        const confirmation = document.getElementById('account-signup-confirm').value;
-        if (password.length < 8) return showMessage('Choisissez un mot de passe de 8 caractères minimum.', true);
-        if (password !== confirmation) return showMessage('Les deux mots de passe ne correspondent pas.', true);
-
-        const accounts = readAccounts();
-        if (accounts.some(account => account.email === email)) return showMessage('Un compte local existe déjà avec cette adresse.', true);
+        const selectedCategory = signupForm.querySelector('input[name="account-category"]:checked');
+        const category = selectedCategory && selectedCategory.value;
+        if (!name || !phone || !STANDARD_CATEGORIES.includes(category)) return showMessage('Complétez tous les champs et choisissez Vendeur ou Acheteur.', true);
+        if (password.length < 8) return showMessage('Choisissez un mot de passe de 8 caractères minimum (démo locale).', true);
+        const users = readLocalUsers();
+        if (users.some(user => user.phone === phone)) return showMessage('Un compte local existe déjà avec ce numéro.', true);
+        const user = { name, phone, password, category, premiumSince: null };
         try {
-            const salt = window.crypto.getRandomValues(new Uint8Array(16));
-            const passwordHash = await hashPassword(password, salt);
-            accounts.push({ email, name, salt: encode(salt), passwordHash, createdAt: new Date().toISOString() });
-            writeAccounts(accounts);
-            localStorage.setItem(ACCOUNT_SESSION_KEY, email);
+            users.push(user);
+            writeUsers(users);
+            localStorage.setItem(ACCOUNT_SESSION_KEY, phone);
             signupForm.reset();
             renderAccount();
-        } catch (error) {
-            showMessage(error.name === 'QuotaExceededError' ? 'Espace local insuffisant pour enregistrer ce profil.' : error.message || 'Impossible de créer le compte local.', true);
+            showMessage('Compte standard de démonstration créé et connecté.');
+        } catch {
+            showMessage('Impossible d’enregistrer le compte local.', true);
         }
     });
 
-    loginForm.addEventListener('submit', async event => {
+    loginForm.addEventListener('submit', event => {
         event.preventDefault();
-        const email = document.getElementById('account-login-email').value.trim().toLowerCase();
+        const phone = document.getElementById('account-login-phone').value.trim();
         const password = document.getElementById('account-login-password').value;
-        const account = readAccounts().find(item => item.email === email);
-        if (!account) return showMessage('Aucun compte local trouvé pour cette adresse.', true);
-        try {
-            const candidate = await hashPassword(password, decode(account.salt));
-            if (candidate !== account.passwordHash) return showMessage('Adresse e-mail ou mot de passe incorrect.', true);
-            localStorage.setItem(ACCOUNT_SESSION_KEY, email);
-            loginForm.reset();
-            renderAccount();
-        } catch (error) {
-            showMessage(error.message || 'Impossible de vérifier ce compte local.', true);
-        }
+        const user = readLocalUsers().find(account => account.phone === phone && account.password === password);
+        if (!user) return showMessage('Numéro ou mot de passe incorrect.', true);
+        localStorage.setItem(ACCOUNT_SESSION_KEY, phone);
+        loginForm.reset();
+        renderAccount();
     });
 
     profileForm.addEventListener('submit', event => {
         event.preventDefault();
-        const email = localStorage.getItem(ACCOUNT_SESSION_KEY);
-        const accounts = readAccounts();
-        const account = accounts.find(item => item.email === email);
-        if (!account) return renderAccount();
-        account.name = document.getElementById('account-profile-name').value.trim();
+        const current = getCurrentAccount();
+        if (!current) return renderAccount();
+        const users = readLocalUsers();
+        const user = users.find(account => account.phone === current.phone);
+        const newPhone = document.getElementById('account-profile-phone').value.trim();
+        if (users.some(account => account.phone === newPhone && account !== user)) return showMessage('Ce numéro est déjà associé à un compte.', true);
+        user.name = document.getElementById('account-profile-name').value.trim();
+        user.phone = newPhone;
         try {
-            writeAccounts(accounts);
+            writeUsers(users);
+            localStorage.setItem(ACCOUNT_SESSION_KEY, newPhone);
+            renderAccount();
             showMessage('Profil enregistré sur cet appareil.');
         } catch {
             showMessage('Impossible d’enregistrer le profil local.', true);
+        }
+    });
+
+    document.getElementById('account-subscribe').addEventListener('click', () => {
+        const user = getCurrentAccount();
+        if (!user || !user.category.endsWith('_standard')) return;
+        document.getElementById('premium-payment-phone').value = user.phone;
+        document.getElementById('premium-payment-message').textContent = '';
+        paymentModal.classList.add('open');
+        paymentModal.setAttribute('aria-hidden', 'false');
+        document.getElementById('premium-payment-phone').focus();
+    });
+
+    function closePaymentModal() {
+        paymentModal.classList.remove('open');
+        paymentModal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.getElementById('premium-payment-close').addEventListener('click', closePaymentModal);
+    paymentModal.addEventListener('click', event => {
+        if (event.target === paymentModal) closePaymentModal();
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && paymentModal.classList.contains('open')) closePaymentModal();
+    });
+
+    paymentForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const current = getCurrentAccount();
+        const paymentPhone = document.getElementById('premium-payment-phone').value.trim();
+        const paymentMessage = document.getElementById('premium-payment-message');
+        if (!current || !current.category.endsWith('_standard')) {
+            paymentMessage.textContent = 'Aucun abonnement standard à mettre à niveau.';
+            return;
+        }
+        if (!paymentPhone) {
+            paymentMessage.textContent = 'Saisissez le numéro Mobile Money de démonstration.';
+            return;
+        }
+        const users = readLocalUsers();
+        const savedUser = users.find(account => account.phone === current.phone);
+        if (!savedUser || !savedUser.category.endsWith('_standard')) return renderAccount();
+        savedUser.category = savedUser.category.replace('_standard', '_premium');
+        savedUser.premiumSince = new Date().toISOString();
+        try {
+            writeUsers(users);
+            closePaymentModal();
+            paymentForm.reset();
+            renderAccount();
+            showMessage('Abonnement activé (simulation) ✅');
+        } catch {
+            paymentMessage.textContent = 'Impossible d’enregistrer l’abonnement de démonstration.';
+        }
+    });
+
+    const forumForm = document.getElementById('forum-form');
+    forumForm.addEventListener('submit', event => {
+        event.preventDefault();
+        const user = getCurrentAccount();
+        if (!isPremiumAccount(user)) return showMessage('La communauté est réservée aux comptes Premium actifs.', true);
+        const input = document.getElementById('forum-input');
+        const text = input.value.trim();
+        if (!text) return;
+        let messages = [];
+        try {
+            const saved = JSON.parse(localStorage.getItem(FORUM_STORAGE_KEY) || '[]');
+            if (Array.isArray(saved)) messages = saved;
+        } catch { /* Start a fresh local forum if storage is invalid. */ }
+        messages.push({ name: user.name, time: new Date().toISOString(), text: text.slice(0, 500) });
+        try {
+            localStorage.setItem(FORUM_STORAGE_KEY, JSON.stringify(messages.slice(-50)));
+            input.value = '';
+            renderForum();
+        } catch {
+            showMessage('Impossible d’enregistrer le message dans ce navigateur.', true);
         }
     });
 
@@ -156,9 +304,9 @@ function setupAccount() {
         renderAccount();
     });
     document.getElementById('account-delete').addEventListener('click', () => {
-        if (!window.confirm('Supprimer définitivement ce profil de cet appareil ?')) return;
-        const email = localStorage.getItem(ACCOUNT_SESSION_KEY);
-        writeAccounts(readAccounts().filter(account => account.email !== email));
+        if (!window.confirm('Supprimer définitivement ce profil de démonstration sur cet appareil ?')) return;
+        const user = getCurrentAccount();
+        writeUsers(readLocalUsers().filter(account => account.phone !== (user && user.phone)));
         localStorage.removeItem(ACCOUNT_SESSION_KEY);
         renderAccount();
     });
@@ -166,6 +314,13 @@ function setupAccount() {
     renderAccount();
 }
 
+if (typeof window !== 'undefined') {
+    window.getCurrentAccount = getCurrentAccount;
+    window.isPremiumAccount = isPremiumAccount;
+    window.canSell = canSell;
+    window.canUseSalesTools = canSell;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { setupAccount };
+    module.exports = { setupAccount, getCurrentAccount, isPremiumAccount, canSell, readLocalUsers };
 }

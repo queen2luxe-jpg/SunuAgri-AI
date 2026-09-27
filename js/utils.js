@@ -6,38 +6,40 @@
 // ================================================================
 // DONNÉES GLOBALES DE L'APPLICATION
 // ================================================================
+const simulatedUpdatedAt = hoursAgo => new Date(Date.now() - hoursAgo * 60 * 60 * 1000).toISOString();
+
 const AGRI_DATA = {
     products: [
-        { id:'oignon', name:'Oignon Local (Podor / Gandiol)', emoji:'🧅', unit:'Sac de 50 kg', unitWeightKg:50, basePrice:17500, lossRiskPerWeek:0.04, shelfLifeDays:45 },
-        { id:'arachide', name:'Arachide Décortiquée (Bassin arachidier)', emoji:'🥜', unit:'Sac de 100 kg', unitWeightKg:100, basePrice:38000, lossRiskPerWeek:0.015, shelfLifeDays:180 },
-        { id:'mangue', name:'Mangue Kent (Niayes / Casamance)', emoji:'🥭', unit:'Caisse de 20 kg', unitWeightKg:20, basePrice:9500, lossRiskPerWeek:0.12, shelfLifeDays:12 },
-        { id:'tomate', name:'Tomate Fraîche Locale', emoji:'🍅', unit:'Caisse de 25 kg', unitWeightKg:25, basePrice:12500, lossRiskPerWeek:0.15, shelfLifeDays:8 },
-        { id:'niebe', name:'Niébé (Haricot rouge / blanc)', emoji:'🌱', unit:'Sac de 50 kg', unitWeightKg:50, basePrice:24500, lossRiskPerWeek:0.02, shelfLifeDays:120 },
-        { id:'piment', name:'Piment Frais (Piment oiseau)', emoji:'🌶️', unit:'Sac de 25 kg', unitWeightKg:25, basePrice:21000, lossRiskPerWeek:0.08, shelfLifeDays:20 },
-        { id:'mais', name:'Maïs Grain Local', emoji:'🌽', unit:'Sac de 50 kg', unitWeightKg:50, basePrice:14000, lossRiskPerWeek:0.02, shelfLifeDays:150 }
+        { id:'oignon', name:'Oignon Local (Podor / Gandiol)', emoji:'🧅', unit:'Sac de 50 kg', unitWeightKg:50, basePrice:17500, lossRiskPerWeek:0.04, shelfLifeDays:45, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(2), confidence:'moyenne' } },
+        { id:'arachide', name:'Arachide Décortiquée (Bassin arachidier)', emoji:'🥜', unit:'Sac de 100 kg', unitWeightKg:100, basePrice:38000, lossRiskPerWeek:0.015, shelfLifeDays:180, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(3), confidence:'moyenne' } },
+        { id:'mangue', name:'Mangue Kent (Niayes / Casamance)', emoji:'🥭', unit:'Caisse de 20 kg', unitWeightKg:20, basePrice:9500, lossRiskPerWeek:0.12, shelfLifeDays:12, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(4), confidence:'moyenne' } },
+        { id:'tomate', name:'Tomate Fraîche Locale', emoji:'🍅', unit:'Caisse de 25 kg', unitWeightKg:25, basePrice:12500, lossRiskPerWeek:0.15, shelfLifeDays:8, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(2), confidence:'moyenne' } },
+        { id:'niebe', name:'Niébé (Haricot rouge / blanc)', emoji:'🌱', unit:'Sac de 50 kg', unitWeightKg:50, basePrice:24500, lossRiskPerWeek:0.02, shelfLifeDays:120, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(5), confidence:'moyenne' } },
+        { id:'piment', name:'Piment Frais (Piment oiseau)', emoji:'🌶️', unit:'Sac de 25 kg', unitWeightKg:25, basePrice:21000, lossRiskPerWeek:0.08, shelfLifeDays:20, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(3), confidence:'moyenne' } },
+        { id:'mais', name:'Maïs Grain Local', emoji:'🌽', unit:'Sac de 50 kg', unitWeightKg:50, basePrice:14000, lossRiskPerWeek:0.02, shelfLifeDays:150, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(4), confidence:'moyenne' } }
     ],
     regions: [
-        { id:'Saint-Louis', name:'Saint-Louis (Vallée du Fleuve, Podor, Dagana)', hubDistKm:265 },
-        { id:'Thies', name:'Thiès (Zone des Niayes, Pout, Mboro)', hubDistKm:70 },
-        { id:'Kaolack', name:'Kaolack (Bassin Arachidier, Nioro)', hubDistKm:190 },
-        { id:'Diourbel', name:'Diourbel / Touba (Bambey, Mbacké)', hubDistKm:150 },
-        { id:'Dakar', name:'Région de Dakar (Rufisque, Sangalkam)', hubDistKm:25 },
-        { id:'Kolda', name:'Kolda / Casamance (Vélingara, Sédhiou)', hubDistKm:460 },
-        { id:'Fatick', name:'Fatick / Gossas', hubDistKm:155 }
+        { id:'Saint-Louis', name:'Saint-Louis (Vallée du Fleuve, Podor, Dagana)', hubDistKm:265, lat:16.0179, lon:-16.4896 },
+        { id:'Thies', name:'Thiès (Zone des Niayes, Pout, Mboro)', hubDistKm:70, lat:14.7910, lon:-16.9359 },
+        { id:'Kaolack', name:'Kaolack (Bassin Arachidier, Nioro)', hubDistKm:190, lat:14.1510, lon:-16.0726 },
+        { id:'Diourbel', name:'Diourbel / Touba (Bambey, Mbacké)', hubDistKm:150, lat:14.6561, lon:-16.2347 },
+        { id:'Dakar', name:'Région de Dakar (Rufisque, Sangalkam)', hubDistKm:25, lat:14.7167, lon:-17.4677 },
+        { id:'Kolda', name:'Kolda / Casamance (Vélingara, Sédhiou)', hubDistKm:460, lat:12.8833, lon:-14.9500 },
+        { id:'Fatick', name:'Fatick / Gossas', hubDistKm:155, lat:14.3390, lon:-16.4110 }
     ],
     markets: [
-        { id:'castors', name:'Marché Castors (Dakar)', city:'Dakar', type:'Gros & Demi-gros', demandBonus:1.24, tags:['Très Forte Demande','Gros volumes'], distancesKm:{'Saint-Louis':265,'Thies':70,'Kaolack':190,'Diourbel':150,'Dakar':12,'Kolda':460,'Fatick':155} },
-        { id:'thiaroye', name:'Marché Syndicat de Thiaroye', city:'Dakar Banlieue', type:"Hub d'Éclatement", demandBonus:1.19, tags:['Rotations rapides','Arrivages directs'], distancesKm:{'Saint-Louis':255,'Thies':58,'Kaolack':180,'Diourbel':140,'Dakar':18,'Kolda':450,'Fatick':145} },
-        { id:'kaolack_m', name:'Marché Central de Kaolack', city:'Kaolack', type:'Carrefour Régional', demandBonus:1.06, tags:['Hub Bassin Arachidier'], distancesKm:{'Saint-Louis':280,'Thies':120,'Kaolack':8,'Diourbel':85,'Dakar':190,'Kolda':270,'Fatick':45} },
-        { id:'diaobe', name:'Marché International de Diaobé', city:'Kolda / Vélingara', type:'Marché Hebdomadaire', demandBonus:1.15, tags:['Sous-régional','Grossistes'], distancesKm:{'Saint-Louis':580,'Thies':490,'Kaolack':320,'Diourbel':360,'Dakar':470,'Kolda':60,'Fatick':340} },
-        { id:'touba_m', name:'Marché Okass de Touba', city:'Touba', type:'Consommation Massive', demandBonus:1.12, tags:['Forte Affluence'], distancesKm:{'Saint-Louis':210,'Thies':105,'Kaolack':90,'Diourbel':15,'Dakar':155,'Kolda':370,'Fatick':110} },
-        { id:'ndar', name:'Marché Ndar (Saint-Louis)', city:'Saint-Louis', type:'Marché Urbain Régional', demandBonus:0.98, tags:['Proximité Vallée'], distancesKm:{'Saint-Louis':10,'Thies':200,'Kaolack':280,'Diourbel':210,'Dakar':265,'Kolda':580,'Fatick':270} }
+        { id:'castors', name:'Marché Castors (Dakar)', city:'Dakar', type:'Gros & Demi-gros', demandBonus:1.24, tags:['Très Forte Demande','Gros volumes'], distancesKm:{'Saint-Louis':265,'Thies':70,'Kaolack':190,'Diourbel':150,'Dakar':12,'Kolda':460,'Fatick':155}, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(2), confidence:'moyenne' } },
+        { id:'thiaroye', name:'Marché Syndicat de Thiaroye', city:'Dakar Banlieue', type:"Hub d'Éclatement", demandBonus:1.19, tags:['Rotations rapides','Arrivages directs'], distancesKm:{'Saint-Louis':255,'Thies':58,'Kaolack':180,'Diourbel':140,'Dakar':18,'Kolda':450,'Fatick':145}, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(9), confidence:'moyenne' } },
+        { id:'kaolack_m', name:'Marché Central de Kaolack', city:'Kaolack', type:'Carrefour Régional', demandBonus:1.06, tags:['Hub Bassin Arachidier'], distancesKm:{'Saint-Louis':280,'Thies':120,'Kaolack':8,'Diourbel':85,'Dakar':190,'Kolda':270,'Fatick':45}, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(28), confidence:'faible' } },
+        { id:'diaobe', name:'Marché International de Diaobé', city:'Kolda / Vélingara', type:'Marché Hebdomadaire', demandBonus:1.15, tags:['Sous-régional','Grossistes'], distancesKm:{'Saint-Louis':580,'Thies':490,'Kaolack':320,'Diourbel':360,'Dakar':470,'Kolda':60,'Fatick':340}, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(52), confidence:'faible' } },
+        { id:'touba_m', name:'Marché Okass de Touba', city:'Touba', type:'Consommation Massive', demandBonus:1.12, tags:['Forte Affluence'], distancesKm:{'Saint-Louis':210,'Thies':105,'Kaolack':90,'Diourbel':15,'Dakar':155,'Kolda':370,'Fatick':110}, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(12), confidence:'moyenne' } },
+        { id:'ndar', name:'Marché Ndar (Saint-Louis)', city:'Saint-Louis', type:'Marché Urbain Régional', demandBonus:0.98, tags:['Proximité Vallée'], distancesKm:{'Saint-Louis':10,'Thies':200,'Kaolack':280,'Diourbel':210,'Dakar':265,'Kolda':580,'Fatick':270}, meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(4), confidence:'haute' } }
     ],
     listings: [
-        { id:'L001', sellerName:'El Hadj Ndiaye (GIE Podor)', sellerPhone:'+221776543210', product:'oignon', quantity:'80 sacs de 50 kg', pricePerUnit:19500, location:'Podor (Saint-Louis)', verified:true, badge:'Récolte fraîche', image:'🧅' },
-        { id:'L002', sellerName:'Awa Seck', sellerPhone:'+221781234567', product:'tomate', quantity:'35 caisses de 25 kg', pricePerUnit:13500, location:'Mboro (Niayes)', verified:true, badge:'Vente urgente', image:'🍅' },
-        { id:'L003', sellerName:'Coopérative Nioro du Rip', sellerPhone:'+221764321987', product:'arachide', quantity:'120 sacs de 100 kg', pricePerUnit:39500, location:'Nioro (Kaolack)', verified:true, badge:'Stock certifié', image:'🥜' },
-        { id:'L004', sellerName:'Mamadou Baldé', sellerPhone:'+221773456789', product:'mangue', quantity:'50 caisses de 20 kg', pricePerUnit:10500, location:'Oussouye (Ziguinchor)', verified:false, badge:'Qualité Kent', image:'🥭' }
+        { id:'L001', sellerName:'El Hadj Ndiaye (GIE Podor)', sellerPhone:'+221776543210', product:'oignon', quantity:'80 sacs de 50 kg', pricePerUnit:19500, location:'Podor (Saint-Louis)', verified:true, badge:'Récolte fraîche', image:'🧅', meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(2), confidence:'moyenne' } },
+        { id:'L002', sellerName:'Awa Seck', sellerPhone:'+221781234567', product:'tomate', quantity:'35 caisses de 25 kg', pricePerUnit:13500, location:'Mboro (Niayes)', verified:true, badge:'Vente urgente', image:'🍅', meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(3), confidence:'moyenne' } },
+        { id:'L003', sellerName:'Coopérative Nioro du Rip', sellerPhone:'+221764321987', product:'arachide', quantity:'120 sacs de 100 kg', pricePerUnit:39500, location:'Nioro (Kaolack)', verified:true, badge:'Stock certifié', image:'🥜', meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(4), confidence:'moyenne' } },
+        { id:'L004', sellerName:'Mamadou Baldé', sellerPhone:'+221773456789', product:'mangue', quantity:'50 caisses de 20 kg', pricePerUnit:10500, location:'Oussouye (Ziguinchor)', verified:false, badge:'Qualité Kent', image:'🥭', meta:{ source:'Estimation SunuAgri', lastUpdated:simulatedUpdatedAt(6), confidence:'faible' } }
     ],
     aiKnowledge: [
         {
@@ -107,6 +109,38 @@ const AppState = {
 // FONCTIONS UTILITAIRES PARTAGÉES
 // ================================================================
 
+function getFreshnessBadge(lastUpdated) {
+    const ageMs = Date.now() - Date.parse(lastUpdated);
+    if (!Number.isFinite(ageMs) || ageMs > 48 * 60 * 60 * 1000) return '🔴 Ancien, non actuel';
+    if (ageMs < 6 * 60 * 60 * 1000) return '🟢 À jour';
+    return '🟠 À vérifier';
+}
+
+function getDataTraceabilityHtml(meta) {
+    const data = meta || {};
+    const badge = getFreshnessBadge(data.lastUpdated);
+    const freshnessClass = badge.startsWith('🟢') ? 'freshness-badge--fresh' : badge.startsWith('🟠') ? 'freshness-badge--check' : 'freshness-badge--old';
+    return `<div class="data-trace">Source : ${data.source || 'Estimation SunuAgri'} · <span class="freshness-badge ${freshnessClass}">${badge}</span> · Confiance : ${data.confidence || 'faible'}</div>`;
+}
+
+function formatDataTraceability(meta) {
+    const data = meta || {};
+    return `Source : ${data.source || 'Estimation SunuAgri'} · ${getFreshnessBadge(data.lastUpdated)} · Confiance : ${data.confidence || 'faible'}`;
+}
+
+async function fetchWeather(lat, lon) {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current=temperature_2m,precipitation&timezone=Africa%2FDakar`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Open-Meteo a répondu ${response.status}`);
+    const data = await response.json();
+    const temperature = data.current && data.current.temperature_2m;
+    const precipitation = data.current && data.current.precipitation;
+    if (!Number.isFinite(temperature) || !Number.isFinite(precipitation)) {
+        throw new Error('Réponse météo Open-Meteo invalide');
+    }
+    return { temperature, precipitation, fetchedAt: new Date().toISOString() };
+}
+
 /**
  * Affiche un toast de notification en bas de l'écran.
  * @param {string} text - Texte du toast
@@ -156,8 +190,12 @@ if (typeof window !== 'undefined') {
     window.AppState = AppState;
     window.showToast = showToast;
     window.populateSelects = populateSelects;
+    window.getFreshnessBadge = getFreshnessBadge;
+    window.getDataTraceabilityHtml = getDataTraceabilityHtml;
+    window.formatDataTraceability = formatDataTraceability;
+    window.fetchWeather = fetchWeather;
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { AGRI_DATA, AppState, showToast, populateSelects };
+    module.exports = { AGRI_DATA, AppState, showToast, populateSelects, getFreshnessBadge, getDataTraceabilityHtml, formatDataTraceability, fetchWeather };
 }
